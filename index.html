@@ -7,11 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-<!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 
 <style>
   :root{
@@ -22,16 +22,20 @@
     --accent-deep:#0A5C4F;
     --accent-tint:#DCEFE9;
     --coral:#E2725B;
-    --line:#DDD5C4;
+    --line:#E4DECD;
     --white:#FFFFFF;
     --danger:#C1432E;
     --warn:#B8860B;
+    --blue:#0A84FF;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{
     margin:0;
-    font-family:'Inter',sans-serif;
+    font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
     background:var(--paper-dim);
     color:var(--ink);
     -webkit-font-smoothing:antialiased;
@@ -52,7 +56,7 @@
   }
   @media(min-width:520px){
     body{padding:24px 0;}
-    #phone{min-height:calc(100vh - 48px); border-radius:22px;}
+    #phone{min-height:calc(100vh - 48px); border-radius:28px;}
   }
 
   /* ---------- Auth screen ---------- */
@@ -70,12 +74,7 @@
       var(--paper);
     text-align:center;
   }
-  .wordmark{
-    font-size:1.9rem;
-    letter-spacing:-0.01em;
-    color:var(--ink);
-    line-height:1.15;
-  }
+  .wordmark{font-size:1.9rem; letter-spacing:-0.01em; color:var(--ink); line-height:1.15;}
   .wordmark em{color:var(--accent); font-style:italic;}
   .tagline{color:#5B5347; font-size:0.95rem; max-width:280px;}
   .google-btn{
@@ -88,22 +87,19 @@
   .google-btn:hover{border-color:var(--accent);}
   .google-g{width:20px;height:20px;}
 
-  /* ---------- Seal (signature element) ---------- */
+  /* ---------- Seal (verified badge, always blue) ---------- */
   .seal{
     display:inline-flex; align-items:center; justify-content:center;
     width:15px;height:15px; border-radius:50%;
-    background:var(--accent); color:#fff; font-size:9px; flex:none;
+    background:var(--blue); color:#fff; font-size:9px; flex:none;
     position:relative;
   }
   .seal::after{
     content:''; position:absolute; inset:-3px; border-radius:50%;
-    border:1px solid var(--accent); opacity:0.5;
+    border:1px solid var(--blue); opacity:0.5;
     animation:pulse 2.2s ease-out infinite;
   }
-  @keyframes pulse{
-    0%{transform:scale(0.9); opacity:0.6;}
-    100%{transform:scale(1.6); opacity:0;}
-  }
+  @keyframes pulse{0%{transform:scale(0.9); opacity:0.6;}100%{transform:scale(1.6); opacity:0;}}
 
   /* ---------- App shell ---------- */
   #app{flex:1; display:flex; flex-direction:column; min-height:100%;}
@@ -112,9 +108,11 @@
     display:flex; align-items:center; justify-content:space-between;
     padding:16px 18px 14px;
     border-bottom:1px solid var(--line);
-    background:var(--paper);
+    background:rgba(246,242,233,0.9);
+    backdrop-filter:blur(10px);
+    position:sticky; top:0; z-index:5;
   }
-  .topbar h1{font-size:1.3rem; margin:0; letter-spacing:-0.01em;}
+  .topbar h1{font-size:1.35rem; margin:0; letter-spacing:-0.01em; font-weight:700;}
   .avatar{
     width:34px;height:34px;border-radius:50%;
     background:var(--accent-tint); color:var(--accent-deep);
@@ -125,28 +123,19 @@
   .avatar img{width:100%;height:100%;object-fit:cover;}
 
   main{flex:1; overflow:hidden; position:relative;}
-  .view{
-    position:absolute; inset:0;
-    display:none; flex-direction:column;
-    overflow-y:auto;
-  }
+  .view{position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto;}
   .view.active{display:flex;}
-  .list-header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:18px 18px 8px;
-  }
-  .list-header h2{font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#8A8171; margin:0; font-weight:600;}
+  .list-header{display:flex; align-items:center; justify-content:space-between; padding:18px 18px 8px;}
+  .list-header h2{font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#8A8171; margin:0; font-weight:700;}
   .fab{
     width:32px;height:32px;border-radius:50%;
     background:var(--accent); color:#fff; border:none;
     font-size:1.1rem; cursor:pointer; line-height:1;
     display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 8px rgba(14,124,107,0.35);
   }
 
-  .row{
-    display:flex; align-items:center; gap:12px;
-    padding:11px 18px; cursor:pointer; border-bottom:1px solid transparent;
-  }
+  .row{display:flex; align-items:center; gap:12px; padding:11px 18px; cursor:pointer; border-bottom:1px solid transparent;}
   .row:active{background:var(--accent-tint);}
   .row .avatar{width:46px;height:46px;font-size:1rem;}
   .row .meta{flex:1; min-width:0;}
@@ -154,253 +143,188 @@
   .row .sub{color:#8A8171; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .row .time{font-size:0.72rem; color:#A69C88; flex:none;}
   .empty{padding:60px 30px; text-align:center; color:#A69C88; font-size:0.9rem;}
+  .section-label{padding:10px 18px 2px; font-size:0.7rem; font-weight:700; color:#A69C88; text-transform:uppercase; letter-spacing:0.07em;}
 
   /* ---------- Status view ---------- */
-  .status-ring{
-    width:46px;height:46px;border-radius:50%;
-    padding:2px; flex:none;
-    background:conic-gradient(var(--accent) 0deg 360deg);
-  }
+  .status-ring{width:46px;height:46px;border-radius:50%; padding:2px; flex:none; background:conic-gradient(var(--accent) 0deg 360deg);}
   .status-ring.seen{background:var(--line);}
   .status-ring .avatar{width:100%;height:100%; border:2px solid var(--paper);}
 
-  /* ---------- Tab bar ---------- */
+  /* ---------- Tab bar (iOS style) ---------- */
   .tabbar{
-    display:flex; border-top:1px solid var(--line); background:var(--paper);
+    display:flex; border-top:1px solid var(--line);
+    background:rgba(246,242,233,0.92); backdrop-filter:blur(14px);
+    padding-bottom:2px;
   }
   .tabbar button{
-    flex:1; border:none; background:none; padding:10px 0 12px;
+    flex:1; border:none; background:none; padding:9px 0 10px;
     display:flex; flex-direction:column; align-items:center; gap:3px;
-    color:#A69C88; font-size:0.68rem; font-weight:600; cursor:pointer;
-    letter-spacing:0.03em; text-transform:uppercase;
+    color:#A69C88; font-size:0.66rem; font-weight:600; cursor:pointer;
+    letter-spacing:0.02em;
   }
   .tabbar button.active{color:var(--accent-deep);}
-  .tabbar .icon{font-size:1.15rem;}
+  .tabbar .icon{font-size:1.25rem;}
 
   /* ---------- Conversation overlay ---------- */
   #conversation{
     position:absolute; inset:0; background:var(--paper);
     display:flex; flex-direction:column; z-index:20;
-    transform:translateX(100%); transition:transform 0.22s ease;
+    transform:translateX(100%); transition:transform 0.25s cubic-bezier(.32,.72,0,1);
   }
   #conversation.open{transform:translateX(0);}
-  .conv-header{
-    display:flex; align-items:center; gap:10px;
-    padding:14px 16px; border-bottom:1px solid var(--line);
-  }
+  .conv-header{display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line);}
   .icon-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink); padding:4px;}
   .conv-header .name{font-weight:600; font-size:0.98rem; display:flex; align-items:center; gap:5px;}
   .conv-header .sub{font-size:0.75rem; color:#8A8171;}
-  #messages{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px;}
+  #messages{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px; background-size:cover; background-position:center;}
   .bubble-wrap{display:flex; flex-direction:column; max-width:78%;}
   .bubble-wrap.out{align-self:flex-end; align-items:flex-end;}
   .bubble-wrap.in{align-self:flex-start; align-items:flex-start;}
   .sender-tag{font-size:0.72rem; color:var(--accent-deep); font-weight:600; margin:0 2px 2px; display:flex; align-items:center; gap:4px;}
-  .bubble{
-    padding:9px 13px; border-radius:16px; font-size:0.92rem; line-height:1.4;
-    box-shadow:0 1px 2px rgba(20,35,31,0.06);
-  }
-  .bubble-wrap.out .bubble{background:var(--accent-tint); border-bottom-right-radius:4px;}
-  .bubble-wrap.in .bubble{background:var(--white); border-bottom-left-radius:4px;}
+  .bubble{padding:9px 13px; border-radius:18px; font-size:0.92rem; line-height:1.4; box-shadow:0 1px 2px rgba(20,35,31,0.06);}
+  .bubble-wrap.out .bubble{background:var(--accent-tint); border-bottom-right-radius:5px;}
+  .bubble-wrap.in .bubble{background:var(--white); border-bottom-left-radius:5px;}
   .bubble audio{max-width:220px; height:34px;}
   .msg-time{font-size:0.65rem; color:#A69C88; margin-top:2px;}
-  .channel-note{
-    text-align:center; padding:10px; font-size:0.8rem; color:#8A8171;
-    background:var(--paper-dim); margin:10px 16px; border-radius:10px;
-  }
-  #official-banner{
-    color:var(--accent-deep); background:var(--accent-tint); font-weight:600;
-    display:flex; align-items:center; justify-content:center; gap:6px;
-  }
+  .channel-note{text-align:center; padding:10px; font-size:0.8rem; color:#8A8171; background:var(--paper-dim); margin:10px 16px; border-radius:12px;}
+  #official-banner{color:var(--accent-deep); background:var(--accent-tint); font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px;}
 
-  .composer{
-    display:flex; align-items:center; gap:8px;
-    padding:10px 12px; border-top:1px solid var(--line); background:var(--paper);
-  }
-  .composer input[type=text]{
-    flex:1; border:1px solid var(--line); border-radius:999px;
-    padding:10px 16px; font-size:0.92rem; font-family:inherit; background:var(--white);
-  }
+  .composer{display:flex; align-items:center; gap:8px; padding:10px 12px; border-top:1px solid var(--line); background:var(--paper);}
+  .composer input[type=text]{flex:1; border:1px solid var(--line); border-radius:999px; padding:10px 16px; font-size:0.92rem; font-family:inherit; background:var(--white);}
   .composer input[type=text]:focus{outline:2px solid var(--accent); outline-offset:1px;}
-  .round-btn{
-    width:40px;height:40px;border-radius:50%;border:none;
-    background:var(--accent); color:#fff; font-size:1.05rem; cursor:pointer; flex:none;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .round-btn{width:40px;height:40px;border-radius:50%;border:none; background:var(--accent); color:#fff; font-size:1.05rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
   .round-btn.recording{background:var(--danger); animation:rec-pulse 1s ease-in-out infinite;}
   @keyframes rec-pulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
 
   /* ---------- Modals ---------- */
-  .modal-backdrop{
-    position:absolute; inset:0; background:rgba(20,35,31,0.4);
-    display:flex; align-items:flex-end; z-index:30;
-  }
+  .modal-backdrop{position:absolute; inset:0; background:rgba(20,35,31,0.4); display:flex; align-items:flex-end; z-index:30;}
   .modal-backdrop[hidden]{display:none;}
-  .modal-sheet{
-    background:var(--paper); width:100%; max-height:82%;
-    border-radius:20px 20px 0 0; padding:20px 20px 24px;
-    overflow-y:auto;
-  }
+  .modal-sheet{background:var(--paper); width:100%; max-height:86%; border-radius:22px 22px 0 0; padding:20px 20px 24px; overflow-y:auto;}
   .modal-sheet h3{margin:0 0 14px; font-size:1.05rem;}
-  .modal-sheet label{display:block; font-size:0.78rem; font-weight:600; color:#8A8171; margin:14px 0 5px; text-transform:uppercase; letter-spacing:0.05em;}
-  .modal-sheet input[type=text], .modal-sheet textarea{
-    width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+  .modal-sheet label{display:block; font-size:0.78rem; font-weight:700; color:#8A8171; margin:14px 0 5px; text-transform:uppercase; letter-spacing:0.05em;}
+  .modal-sheet input[type=text], .modal-sheet textarea, .modal-sheet select{
+    width:100%; border:1px solid var(--line); border-radius:var(--radius-sm); padding:10px 12px;
     font-family:inherit; font-size:0.92rem; background:var(--white);
   }
   .modal-sheet textarea{min-height:80px; resize:vertical;}
   .close-x{position:absolute; top:14px; right:16px; background:none; border:none; font-size:1.3rem; cursor:pointer; color:#8A8171;}
-  .primary-btn{
-    width:100%; background:var(--accent); color:#fff; border:none; border-radius:10px;
-    padding:12px; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:16px;
-  }
+  .primary-btn{width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:12px; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:16px;}
   .primary-btn:disabled{opacity:0.5; cursor:default;}
-  .danger-btn{background:none; color:var(--danger); border:1px solid var(--danger); border-radius:10px; padding:10px; width:100%; font-weight:600; cursor:pointer; margin-top:10px;}
+  .secondary-btn{width:100%; background:var(--paper-dim); color:var(--ink); border:1px solid var(--line); border-radius:var(--radius-sm); padding:11px; font-weight:600; font-size:0.88rem; cursor:pointer; margin-top:10px;}
+  .danger-btn{background:none; color:var(--danger); border:1px solid var(--danger); border-radius:var(--radius-sm); padding:10px; width:100%; font-weight:600; cursor:pointer; margin-top:10px;}
   .radio-row{display:flex; gap:10px; margin-top:6px;}
-  .radio-row label{
-    flex:1; border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center;
-    font-size:0.85rem; font-weight:600; color:#8A8171; text-transform:none; letter-spacing:0; margin:0; cursor:pointer;
-  }
+  .radio-row label{flex:1; border:1px solid var(--line); border-radius:var(--radius-sm); padding:10px; text-align:center; font-size:0.85rem; font-weight:600; color:#8A8171; text-transform:none; letter-spacing:0; margin:0; cursor:pointer;}
   .radio-row input{display:none;}
-  .radio-row input:checked + span{color:var(--accent-deep);}
   .radio-row label.checked{border-color:var(--accent); background:var(--accent-tint); color:var(--accent-deep);}
   .member-pick{display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line);}
   .member-pick input{width:18px;height:18px;}
-  .color-swatches{display:flex; gap:8px; margin-top:6px;}
+  .color-swatches{display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;}
   .swatch{width:34px;height:34px;border-radius:50%; cursor:pointer; border:2px solid transparent;}
   .swatch.selected{border-color:var(--ink);}
 
-  /* Status viewer */
-  #status-viewer{
-    position:absolute; inset:0; background:var(--ink); z-index:40;
-    display:flex; flex-direction:column; color:#fff;
-  }
-  #status-viewer[hidden]{display:none;}
-  .status-progress{height:3px; background:rgba(255,255,255,0.25); margin:10px 14px 0; border-radius:2px; overflow:hidden;}
-  .status-progress span{display:block; height:100%; background:#fff; width:0%; transition:width linear;}
-  .status-viewer-header{display:flex; align-items:center; gap:10px; padding:10px 14px;}
-  .status-viewer-body{flex:1; display:flex; align-items:center; justify-content:center; padding:30px; text-align:center; font-size:1.3rem; font-family:'Fraunces',serif;}
-  .status-viewer-body img{max-width:100%; max-height:100%; border-radius:8px;}
+  .status-ring .avatar{width:100%;height:100%;}
+  .tabbar button .icon{display:block;}
 
-  .toast{
-    position:absolute; bottom:70px; left:50%; transform:translateX(-50%);
-    background:var(--ink); color:#fff; padding:9px 16px; border-radius:999px;
-    font-size:0.82rem; z-index:50; opacity:0; pointer-events:none; transition:opacity 0.25s;
-  }
+  #status-viewer{position:absolute; inset:0; background:var(--ink); z-index:40; display:flex; flex-direction:column; color:#fff;}
+  #status-viewer[hidden]{display:none;}
+  .status-progress-row{display:flex; gap:4px; margin:10px 14px 0;}
+  .status-progress-row .seg{flex:1; height:3px; background:rgba(255,255,255,0.28); border-radius:2px; overflow:hidden;}
+  .status-progress-row .seg span{display:block; height:100%; background:#fff; width:0%;}
+  .status-viewer-header{display:flex; align-items:center; gap:10px; padding:10px 14px;}
+  .status-viewer-body{flex:1; display:flex; align-items:center; justify-content:center; padding:30px; text-align:center; font-size:1.3rem; font-family:'Fraunces',serif; position:relative;}
+  .status-viewer-body img, .status-viewer-body video{max-width:100%; max-height:100%; border-radius:12px;}
+  .status-tap-zone{position:absolute; top:0; bottom:0; width:35%;}
+
+  .toast{position:absolute; bottom:70px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:9px 16px; border-radius:999px; font-size:0.82rem; z-index:50; opacity:0; pointer-events:none; transition:opacity 0.25s; max-width:85%; text-align:center;}
   .toast.show{opacity:1;}
 
   ::-webkit-scrollbar{width:0px;}
 
-  /* ---------- Wallpapers (chat background) ---------- */
-  #messages.wp-plain{background:var(--paper);}
-  #messages.wp-sand{background:var(--paper-dim);}
+  #messages.wp-plain{background-color:var(--paper);}
+  #messages.wp-sand{background-color:var(--paper-dim);}
   #messages.wp-dots{background-color:var(--paper); background-image:radial-gradient(var(--line) 1px, transparent 1px); background-size:16px 16px;}
   #messages.wp-mint{background:linear-gradient(180deg, var(--accent-tint), var(--paper));}
   #messages.wp-dusk{background:linear-gradient(160deg, #EFE0DA, #E9E3F0);}
   #messages.wp-ink{background:#1B2926;}
   #messages.wp-ink .bubble-wrap.in .bubble{background:#2A3A36; color:#F1EEE6;}
   #messages.wp-ink .msg-time, #messages.wp-ink .sender-tag{color:#9FB0AA;}
+  #messages.wp-custom{background-color:var(--paper);}
 
   .swatch-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
-  .wp-swatch{width:40px;height:40px;border-radius:10px; cursor:pointer; border:2px solid transparent; flex:none;}
+  .wp-swatch{width:40px;height:40px;border-radius:12px; cursor:pointer; border:2px solid transparent; flex:none; background-size:cover; background-position:center;}
   .wp-swatch.selected{border-color:var(--ink);}
   .theme-swatch{width:32px;height:32px;border-radius:50%; cursor:pointer; border:2px solid transparent; flex:none;}
   .theme-swatch.selected{border-color:var(--ink);}
 
   .section-title{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; color:#8A8171; font-weight:700; margin:20px 0 6px;}
-  .profile-cover{
-    height:92px; border-radius:16px;
-    background:linear-gradient(135deg, var(--accent), var(--accent-deep));
-    margin-bottom:-38px;
-  }
+  .profile-cover{height:92px; border-radius:18px; background:linear-gradient(135deg, var(--accent), var(--accent-deep)); margin-bottom:-38px; position:relative;}
   .profile-head{display:flex; align-items:flex-end; gap:12px; padding:0 4px;}
+  .profile-head .avatar-wrap{position:relative; width:76px; height:76px; flex:none;}
   .profile-head .avatar{width:76px;height:76px; font-size:1.4rem; border:4px solid var(--paper);}
-  .list-btn{
-    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-    background:var(--white); border:1px solid var(--line); border-radius:12px;
-    padding:12px 14px; font-size:0.9rem; font-weight:600; color:var(--ink);
-    cursor:pointer; margin-top:8px;
-  }
+  .avatar-edit-btn{position:absolute; bottom:-2px; right:-2px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; border:2px solid var(--paper); font-size:0.75rem; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .list-btn{display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:var(--white); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; font-size:0.9rem; font-weight:600; color:var(--ink); cursor:pointer; margin-top:8px;}
   .list-btn .arrow{margin-left:auto; color:#A69C88;}
-  .search-input{
-    width:100%; border:1px solid var(--line); border-radius:999px;
-    padding:9px 14px; font-family:inherit; font-size:0.88rem; background:var(--white); margin-bottom:10px;
-  }
+  .list-btn .badge-count{margin-left:auto; background:var(--danger); color:#fff; font-size:0.68rem; font-weight:700; border-radius:999px; padding:2px 8px;}
+  .search-input{width:100%; border:1px solid var(--line); border-radius:999px; padding:9px 14px; font-family:inherit; font-size:0.88rem; background:var(--white); margin-bottom:10px;}
 
-  /* ---------- Stickers ---------- */
   .sticker-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:8px;}
-  .sticker-tile{
-    aspect-ratio:1; border-radius:14px; display:flex; align-items:center; justify-content:center;
-    font-size:1.7rem; cursor:pointer; border:none;
-  }
-  .bubble-wrap .sticker-msg{
-    width:104px;height:104px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:2.4rem;
-  }
-  .sticker-label{font-size:0.6rem; color:#8A8171; text-align:center; margin-top:2px;}
+  .sticker-tile{aspect-ratio:1; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:1.7rem; cursor:pointer; border:none;}
+  .bubble-wrap .sticker-msg{width:104px;height:104px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:2.4rem;}
 
-  /* ---------- View once ---------- */
-  .viewonce-tile{
-    display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:16px;
-    background:var(--ink); color:#fff; cursor:pointer; font-size:0.85rem;
-  }
+  .viewonce-tile{display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:18px; background:var(--ink); color:#fff; cursor:pointer; font-size:0.85rem;}
   .viewonce-tile.consumed{background:var(--paper-dim); color:#A69C88; cursor:default;}
   #vo-toggle.active{background:var(--danger);}
 
-  /* ---------- Action sheet / admin ---------- */
-  .action-item{
-    display:block; width:100%; text-align:left; background:none; border:none;
-    padding:13px 4px; font-size:0.92rem; border-bottom:1px solid var(--line); cursor:pointer; color:var(--ink);
-  }
+  .action-item{display:block; width:100%; text-align:left; background:none; border:none; padding:13px 4px; font-size:0.92rem; border-bottom:1px solid var(--line); cursor:pointer; color:var(--ink);}
   .action-item.danger{color:var(--danger);}
   .admin-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); flex-wrap:wrap;}
   .admin-row .meta{flex:1; min-width:0;}
-  .status-pill{font-size:0.65rem; padding:2px 8px; border-radius:999px; font-weight:700; text-transform:uppercase;}
+  .status-pill{font-size:0.63rem; padding:2px 8px; border-radius:999px; font-weight:700; text-transform:uppercase;}
   .status-pill.active{background:var(--accent-tint); color:var(--accent-deep);}
-  .status-pill.suspended{background:#F6DEDA; color:var(--danger);}
-  .mini-btn{border:1px solid var(--line); background:var(--white); border-radius:8px; padding:5px 9px; font-size:0.72rem; font-weight:600; cursor:pointer; margin-left:6px;}
+  .status-pill.suspended{background:#F6E7CE; color:var(--warn);}
+  .status-pill.banned{background:#F6DEDA; color:var(--danger);}
+  .mini-btn{border:1px solid var(--line); background:var(--white); border-radius:8px; padding:5px 9px; font-size:0.72rem; font-weight:600; cursor:pointer; margin:4px 6px 0 0;}
   .mini-btn.danger{color:var(--danger); border-color:var(--danger);}
-  .suspended-screen{
-    position:fixed; inset:0; background:var(--ink); color:#fff; z-index:100;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; gap:14px; overflow-y:auto;
-  }
-  .suspended-screen[hidden]{display:none;}
+  .mini-btn.blue{color:var(--blue); border-color:var(--blue);}
 
-  /* ---------- Appeal / review flow ---------- */
-  .appeal-guidelines{
-    background:rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px;
-    max-width:300px; text-align:left; font-size:0.82rem; line-height:1.55;
-  }
+  .suspended-screen{position:fixed; inset:0; background:var(--ink); color:#fff; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; gap:14px; overflow-y:auto;}
+  .suspended-screen[hidden]{display:none;}
+  .suspended-topmenu{position:absolute; top:14px; right:14px;}
+  .suspended-topmenu .icon-btn{color:#fff; font-size:1.3rem;}
+  .suspended-menu-sheet{position:absolute; top:46px; right:14px; background:#26332f; border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,0.4); z-index:2;}
+  .suspended-menu-sheet[hidden]{display:none;}
+  .suspended-menu-sheet button{display:block; width:100%; text-align:left; background:none; border:none; color:#fff; padding:12px 18px; font-size:0.85rem; cursor:pointer; white-space:nowrap;}
+  .suspended-menu-sheet button:hover{background:rgba(255,255,255,0.08);}
+
+  .appeal-guidelines{background:rgba(255,255,255,0.08); border-radius:14px; padding:14px 16px; max-width:300px; text-align:left; font-size:0.82rem; line-height:1.55;}
   .appeal-guidelines-title{font-weight:700; margin-bottom:6px; font-size:0.85rem;}
   .appeal-guidelines ul{margin:0; padding-left:18px;}
-  .appeal-status{
-    background:rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px;
-    max-width:280px; font-size:0.85rem; line-height:1.4;
-  }
+  .appeal-status{background:rgba(255,255,255,0.1); border-radius:14px; padding:12px 16px; max-width:280px; font-size:0.85rem; line-height:1.4;}
   .appeal-status.pending{border:1px solid var(--warn); color:#F4D998;}
   .appeal-status.rejected{border:1px solid var(--danger); color:#F0A99B;}
+  .appeal-status.accepted{border:1px solid #34C759; color:#B7EFC5;}
+  .appeal-status.banned{border:1px solid var(--danger); color:#F0A99B;}
   .appeal-note{color:var(--warn); margin-top:2px; font-size:0.78rem;}
+  .reason-tag{display:inline-block; margin-top:6px; font-size:0.72rem; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,0.12);}
 
-  /* ---------- Fixed overlays (terms, appeal form) that must sit above suspended screen ---------- */
-  .fixed-modal-backdrop{
-    position:fixed; inset:0; background:rgba(20,35,31,0.55);
-    display:flex; align-items:flex-end; justify-content:center; z-index:120;
-  }
+  .fixed-modal-backdrop{position:fixed; inset:0; background:rgba(20,35,31,0.55); display:flex; align-items:flex-end; justify-content:center; z-index:120;}
   .fixed-modal-backdrop[hidden]{display:none;}
   .fixed-modal-backdrop .modal-sheet{max-width:480px; margin:0 auto; width:100%;}
-  .terms-box{
-    max-height:220px; overflow-y:auto; font-size:0.85rem; line-height:1.55; color:#5B5347;
-    border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--white);
-  }
-  .terms-check-row{
-    display:flex; align-items:flex-start; gap:8px; margin-top:14px; cursor:pointer;
-    text-transform:none; letter-spacing:0; font-weight:500; color:var(--ink); font-size:0.88rem;
-  }
+  .terms-box{max-height:220px; overflow-y:auto; font-size:0.85rem; line-height:1.55; color:#5B5347; border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px; background:var(--white);}
+  .terms-check-row{display:flex; align-items:flex-start; gap:8px; margin-top:14px; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:500; color:var(--ink); font-size:0.88rem;}
   .terms-check-row input{margin-top:3px; width:16px; height:16px; flex:none;}
+
+  .switch{position:relative; display:inline-block; width:44px; height:26px; flex:none;}
+  .switch input{opacity:0; width:0; height:0;}
+  .switch-track{position:absolute; inset:0; background:var(--line); border-radius:999px; transition:0.2s; cursor:pointer;}
+  .switch-track::before{content:''; position:absolute; width:22px; height:22px; left:2px; top:2px; background:#fff; border-radius:50%; transition:0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+  .switch input:checked + .switch-track{background:#34C759;}
+  .switch input:checked + .switch-track::before{transform:translateX(18px);}
 </style>
 </head>
 <body>
 <div id="phone">
 
-  <!-- AUTH SCREEN -->
   <div id="auth-screen">
     <div class="wordmark display">XMEN JUNNY <em>CHAT</em></div>
     <div class="tagline">Discussions, statuts et chaînes — connecte-toi avec Google pour commencer.</div>
@@ -410,7 +334,6 @@
     </button>
   </div>
 
-  <!-- TERMS / CONTRACT ACCEPTANCE (shown once, on first sign-in, before profile is created) -->
   <div class="fixed-modal-backdrop" id="terms-overlay" hidden>
     <div class="modal-sheet" style="position:relative;">
       <h3>Conditions d'utilisation</h3>
@@ -419,20 +342,21 @@
         • Respecter les autres membres — pas d'insultes, de harcèlement ni de discrimination<br>
         • Ne pas envoyer de spam ni de contenu illégal, violent ou inapproprié<br>
         • Ne pas usurper l'identité d'une autre personne ou d'un compte officiel<br>
-        • Accepter que l'administrateur puisse suspendre ton compte en cas de non-respect de ces règles<br>
+        • Accepter que l'administrateur puisse suspendre ou bannir ton compte en cas de non-respect de ces règles<br>
         • Que tes messages soient stockés pour le bon fonctionnement du service<br><br>
-        Le non-respect de ces règles peut entraîner une suspension temporaire ou définitive du compte, avec possibilité de demander un examen.
+        Le non-respect de ces règles peut entraîner une suspension temporaire ou un bannissement définitif, avec possibilité de demander un examen (sauf en cas de bannissement définitif).
       </div>
       <label class="terms-check-row">
         <input type="checkbox" id="terms-accept-checkbox">
         <span>J'ai lu et j'accepte les conditions d'utilisation</span>
       </label>
+      <label style="margin-top:14px;">Ton nom (affiché aux autres membres)</label>
+      <input type="text" id="terms-name-input" placeholder="Ton nom" maxlength="40">
       <button class="primary-btn" id="terms-accept-btn" disabled>Continuer</button>
       <button class="danger-btn" id="terms-decline-btn">Refuser et se déconnecter</button>
     </div>
   </div>
 
-  <!-- APP -->
   <div id="app" hidden>
     <div class="topbar">
       <h1 class="display" id="topbar-title">Discussions</h1>
@@ -454,7 +378,10 @@
 
       <section class="view" id="view-groups">
         <div class="list-header"><h2>Groupes & chaînes</h2><button class="fab" id="new-group-fab" title="Créer">+</button></div>
+        <div class="section-label">Mes groupes et chaînes</div>
         <div id="group-list"></div>
+        <div class="section-label">Toutes les chaînes</div>
+        <div id="channel-directory-list"></div>
       </section>
     </main>
 
@@ -465,7 +392,6 @@
     </nav>
   </div>
 
-  <!-- CONVERSATION -->
   <div id="conversation">
     <div class="conv-header">
       <button class="icon-btn" id="conv-back">←</button>
@@ -489,18 +415,20 @@
     </div>
   </div>
 
-  <!-- Status viewer -->
   <div id="status-viewer" hidden>
-    <div class="status-progress"><span id="status-progress-bar"></span></div>
+    <div class="status-progress-row" id="status-progress-row"></div>
     <div class="status-viewer-header">
       <button class="avatar" id="sv-avatar"></button>
       <div class="name" id="sv-name" style="color:#fff;"></div>
       <button class="icon-btn" style="color:#fff; margin-left:auto;" id="sv-close">✕</button>
     </div>
-    <div class="status-viewer-body" id="sv-body"></div>
+    <div class="status-viewer-body" id="sv-body">
+      <div class="status-tap-zone" id="sv-tap-prev" style="left:0;"></div>
+      <div class="status-tap-zone" id="sv-tap-next" style="right:0;"></div>
+      <div id="sv-content"></div>
+    </div>
   </div>
 
-  <!-- New chat modal -->
   <div class="modal-backdrop" id="new-chat-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="new-chat-modal">✕</button>
@@ -509,7 +437,6 @@
     </div>
   </div>
 
-  <!-- New group modal -->
   <div class="modal-backdrop" id="new-group-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="new-group-modal">✕</button>
@@ -526,32 +453,38 @@
     </div>
   </div>
 
-  <!-- Status composer modal -->
   <div class="modal-backdrop" id="status-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="status-modal">✕</button>
       <h3>Nouveau statut</h3>
-      <label>Texte</label>
+      <label>Texte (optionnel avec une photo/vidéo)</label>
       <textarea id="status-text-input" placeholder="Quoi de neuf ?"></textarea>
       <label>Couleur de fond</label>
       <div class="color-swatches" id="status-swatches"></div>
+      <label>Photo ou vidéo (optionnel)</label>
+      <input type="file" id="status-media-input" accept="image/*,video/*">
       <button class="primary-btn" id="publish-status-btn">Publier</button>
     </div>
   </div>
 
-  <!-- Profile modal -->
   <div class="modal-backdrop" id="profile-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="profile-modal">✕</button>
       <div class="profile-cover"></div>
       <div class="profile-head">
-        <button class="avatar" id="profile-modal-avatar" style="pointer-events:none;"></button>
+        <div class="avatar-wrap">
+          <button class="avatar" id="profile-modal-avatar" style="pointer-events:none;"></button>
+          <div class="avatar-edit-btn" id="profile-avatar-edit-btn">✎</div>
+          <input type="file" id="profile-photo-input" accept="image/*" hidden>
+        </div>
         <div>
           <div id="profile-modal-name" style="display:flex; align-items:center; gap:6px; font-weight:700; font-size:1.05rem;"></div>
           <div id="profile-modal-email" style="color:#8A8171; font-size:0.82rem;"></div>
         </div>
       </div>
 
+      <label>Nom</label>
+      <input type="text" id="profile-name-input" maxlength="40">
       <label>Bio / message d'accueil</label>
       <textarea id="profile-bio-input" placeholder="Salut, j'utilise XMEN JUNNY CHAT !"></textarea>
       <button class="primary-btn" id="save-profile-btn">Enregistrer</button>
@@ -561,26 +494,28 @@
 
       <div class="section-title">Fond d'écran des discussions</div>
       <div class="swatch-row" id="wallpaper-swatches"></div>
+      <input type="file" id="wallpaper-photo-input" accept="image/*" hidden>
+      <button class="list-btn" id="import-wallpaper-btn"><span>🖼️ Importer une image</span></button>
+      <div style="font-size:0.75rem; color:#8A8171; margin-top:6px;">Ce fond s'applique uniquement à la discussion actuellement ouverte.</div>
 
       <div class="section-title">Compte</div>
       <input type="text" class="search-input" id="add-account-search" placeholder="Ajouter un compte (nom ou email)…" />
       <div id="add-account-results"></div>
 
-      <button class="list-btn" id="open-admin-panel-btn" hidden><span>🛡️ Panneau admin</span><span class="arrow">›</span></button>
+      <button class="list-btn" id="open-admin-panel-btn" hidden><span>🛡️ Panneau admin</span><span class="badge-count" id="admin-pending-badge" hidden></span><span class="arrow">›</span></button>
       <button class="danger-btn" id="signout-btn">Se déconnecter</button>
     </div>
   </div>
 
-  <!-- Conversation action sheet -->
   <div class="modal-backdrop" id="conv-menu-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="conv-menu-modal">✕</button>
       <h3>Options</h3>
+      <button class="action-item" id="conv-join-toggle-btn" hidden></button>
       <button class="action-item danger" id="report-open-btn">🚩 Signaler cette discussion</button>
     </div>
   </div>
 
-  <!-- Report modal -->
   <div class="modal-backdrop" id="report-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="report-modal">✕</button>
@@ -595,7 +530,6 @@
     </div>
   </div>
 
-  <!-- Sticker picker modal -->
   <div class="modal-backdrop" id="sticker-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="sticker-modal">✕</button>
@@ -607,7 +541,6 @@
     </div>
   </div>
 
-  <!-- Create sticker modal -->
   <div class="modal-backdrop" id="create-sticker-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="create-sticker-modal">✕</button>
@@ -622,21 +555,60 @@
     </div>
   </div>
 
-  <!-- Admin panel modal -->
+  <!-- ADMIN PANEL -->
   <div class="modal-backdrop" id="admin-modal" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="admin-modal">✕</button>
       <h3>Panneau admin</h3>
+
+      <button class="list-btn" id="open-broadcast-btn"><span>📢 Envoyer un message à tous les utilisateurs</span></button>
+
+      <div class="section-title">Demandes d'examen en attente</div>
+      <div id="admin-appeals-list"></div>
+
+      <div class="section-title">Tous les utilisateurs</div>
       <input type="text" class="search-input" id="admin-search-input" placeholder="Rechercher un utilisateur…" />
       <div id="admin-user-list"></div>
     </div>
   </div>
 
-  <!-- Suspended screen -->
+  <div class="modal-backdrop" id="broadcast-modal" hidden>
+    <div class="modal-sheet" style="position:relative;">
+      <button class="close-x" data-close="broadcast-modal">✕</button>
+      <h3>Message à tous les utilisateurs</h3>
+      <label>Message</label>
+      <textarea id="broadcast-text-input" placeholder="Écris le message à diffuser…"></textarea>
+      <button class="primary-btn" id="send-broadcast-btn">Envoyer à tous</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="suspend-reason-modal" hidden>
+    <div class="modal-sheet" style="position:relative;">
+      <button class="close-x" data-close="suspend-reason-modal">✕</button>
+      <h3 id="suspend-reason-title">Suspendre ce compte</h3>
+      <label>Motif</label>
+      <select id="suspend-reason-select">
+        <option value="Spam">Spam</option>
+        <option value="Harcèlement">Harcèlement</option>
+        <option value="Contenu inapproprié">Contenu inapproprié</option>
+        <option value="Non-respect des règles">Non-respect des règles</option>
+        <option value="Autre">Autre</option>
+      </select>
+      <button class="primary-btn" id="confirm-suspend-btn">Confirmer</button>
+    </div>
+  </div>
+
   <div class="suspended-screen" id="suspended-screen" hidden>
-    <div style="font-size:2rem;">⛔</div>
-    <div class="display" style="font-size:1.3rem;">Compte suspendu</div>
-    <div style="opacity:0.8; font-size:0.9rem; max-width:280px;" id="suspended-detail">Contacte l'administrateur pour plus d'informations.</div>
+    <div class="suspended-topmenu">
+      <button class="icon-btn" id="suspended-menu-btn">⋯</button>
+      <div class="suspended-menu-sheet" id="suspended-menu-sheet" hidden>
+        <button id="suspended-switch-account-btn">Se connecter avec un autre compte</button>
+      </div>
+    </div>
+    <div style="font-size:2rem;" id="suspended-icon">⏳</div>
+    <div class="display" style="font-size:1.3rem;" id="suspended-title">Compte suspendu</div>
+    <div style="opacity:0.85; font-size:0.9rem; max-width:280px;" id="suspended-detail">Contacte l'administrateur pour plus d'informations.</div>
+    <div id="suspended-reason-tag" class="reason-tag" hidden></div>
 
     <div id="suspended-appeal-guidelines" class="appeal-guidelines" hidden>
       <div class="appeal-guidelines-title">Pendant l'examen de ton compte</div>
@@ -651,10 +623,10 @@
     <div id="suspended-appeal-status" class="appeal-status" hidden></div>
 
     <button class="primary-btn" style="max-width:240px;" id="suspended-appeal-btn">Demander un examen</button>
+    <button class="primary-btn" style="max-width:240px; background:#34C759; display:none;" id="suspended-reconnect-btn">Se reconnecter</button>
     <button class="danger-btn" style="max-width:240px;" id="suspended-signout-btn">Se déconnecter</button>
   </div>
 
-  <!-- Appeal request overlay -->
   <div class="fixed-modal-backdrop" id="appeal-overlay" hidden>
     <div class="modal-sheet" style="position:relative;">
       <button class="close-x" data-close="appeal-overlay">✕</button>
@@ -687,19 +659,30 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 const FieldValue = firebase.firestore.FieldValue;
 const Timestamp = firebase.firestore.Timestamp;
+let analytics = null;
+try{ analytics = firebase.analytics(); }catch(_e){ /* analytics indisponible (bloqueur de pub, etc.) */ }
+function logEvent(name, params){
+  try{ if(analytics) analytics.logEvent(name, params||{}); }catch(_e){}
+}
+
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
 
 /* ========================= STATE ========================= */
 let currentUser = null;
 let myProfile = null;
-let usersCache = {};      // uid -> profile
-let chatsCache = {};      // chatId -> chat doc
+let usersCache = {};
+let chatsCache = {};
 let currentChatId = null;
 let chatsUnsub = null, usersUnsub = null, statusesUnsub = null, msgUnsub = null, notifUnsub = null;
+let stickersUnsub = null, ownDocUnsub = null, appealsUnsub = null, broadcastUnsub = null;
 let sessionStart = Timestamp.now();
 let mediaRecorder = null, recordedChunks = [];
 let selectedGroupType = 'group';
 let selectedStatusColor = '#0E7C6B';
 let pendingNewUser = null;
+let currentWallpaperChatId = null;
+let statusMediaFile = null;
+let pendingSuspendUid = null, pendingSuspendPermanent = false;
 
 /* ========================= HELPERS ========================= */
 function $(id){ return document.getElementById(id); }
@@ -727,13 +710,23 @@ function showToast(msg){
   const t = $('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
+  setTimeout(()=>t.classList.remove('show'), 2400);
 }
 function openModal(id){ $(id).hidden = false; }
 function closeModal(id){ $(id).hidden = true; }
 document.querySelectorAll('[data-close]').forEach(btn=>{
   btn.addEventListener('click', ()=>closeModal(btn.dataset.close));
 });
+function escapeHTML(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+async function uploadFile(file, path){
+  const ref = storage.ref().child(path);
+  await ref.put(file);
+  return await ref.getDownloadURL();
+}
 
 /* ========================= AUTH ========================= */
 $('google-signin-btn').addEventListener('click', ()=>{
@@ -746,25 +739,20 @@ auth.onAuthStateChanged(async (user)=>{
     currentUser = user;
     const ref = db.collection('users').doc(user.uid);
     let snap;
-    try{
-      snap = await ref.get();
-    }catch(err){
-      showToast('Erreur de connexion : ' + err.message);
-      return;
-    }
+    try{ snap = await ref.get(); }
+    catch(err){ showToast('Erreur de connexion : ' + err.message); return; }
     if(!snap.exists){
-      // Brand new account: must accept the terms before a profile is created.
       pendingNewUser = user;
       $('auth-screen').style.display = 'none';
       $('terms-accept-checkbox').checked = false;
       $('terms-accept-btn').disabled = true;
+      $('terms-name-input').value = user.displayName || '';
       $('terms-overlay').hidden = false;
       return;
     }
-    try{
-      await ensureProfile(user, snap);
-    }catch(err){
-      if(err.message === 'account-suspended') return; // suspended screen already shown
+    try{ await ensureProfile(user, snap); }
+    catch(err){
+      if(err.message === 'account-suspended') return;
       showToast('Erreur de profil : ' + err.message);
       return;
     }
@@ -778,15 +766,18 @@ auth.onAuthStateChanged(async (user)=>{
     $('auth-screen').style.display = 'flex';
     $('app').hidden = true;
     stopListeners();
+    if(ownDocUnsub){ ownDocUnsub(); ownDocUnsub = null; }
   }
 });
 
 function finishLogin(){
   $('auth-screen').style.display = 'none';
+  $('suspended-screen').hidden = true;
   $('app').hidden = false;
   if('Notification' in window && Notification.permission === 'default'){
     Notification.requestPermission();
   }
+  logEvent('login', {method:'google'});
   startListeners();
 }
 
@@ -795,27 +786,26 @@ async function ensureProfile(user, snap){
   const isAdmin = user.email === ADMIN_EMAIL;
 
   myProfile = snap.data();
-  // keep admin role in sync if this email is the admin email
   if(isAdmin && myProfile.role !== 'admin'){
     await ref.update({role:'admin', verified:true});
     myProfile.role = 'admin'; myProfile.verified = true;
   }
   if(!myProfile.themeColor) myProfile.themeColor = 'jade';
-  if(!myProfile.wallpaper) myProfile.wallpaper = 'wp-plain';
+  if(!myProfile.wallpapers) myProfile.wallpapers = {};
   if(myProfile.appealStatus === undefined) myProfile.appealStatus = null;
+  if(!myProfile.mutedChannels) myProfile.mutedChannels = [];
 
-  // Suspension check — the admin account can never lock itself out, even if its
-  // status field was mistakenly left as 'suspended' from earlier testing.
   if(myProfile.status === 'suspended' && !isAdmin){
     const until = myProfile.suspendedUntil;
-    const stillActive = !until || until.toMillis() > Date.now();
+    const permanent = myProfile.permanent === true;
+    const stillActive = permanent || !until || until.toMillis() > Date.now();
     if(stillActive){
       showSuspendedScreen(myProfile);
+      watchOwnDocWhileSuspended(user.uid);
       throw new Error('account-suspended');
     }
   } else if(myProfile.status === 'suspended' && isAdmin){
-    // Auto-heal: clear a stray suspension flag on the admin's own account.
-    await ref.update({status:'active', suspendedUntil:null, appealStatus:null});
+    await ref.update({status:'active', suspendedUntil:null, appealStatus:null, permanent:false});
     myProfile.status = 'active';
     myProfile.suspendedUntil = null;
   }
@@ -826,7 +816,10 @@ async function ensureProfile(user, snap){
 
 /* ---- Terms acceptance (new accounts) ---- */
 $('terms-accept-checkbox').addEventListener('change', ()=>{
-  $('terms-accept-btn').disabled = !$('terms-accept-checkbox').checked;
+  $('terms-accept-btn').disabled = !$('terms-accept-checkbox').checked || !$('terms-name-input').value.trim();
+});
+$('terms-name-input').addEventListener('input', ()=>{
+  $('terms-accept-btn').disabled = !$('terms-accept-checkbox').checked || !$('terms-name-input').value.trim();
 });
 $('terms-decline-btn').addEventListener('click', ()=>{
   $('terms-overlay').hidden = true;
@@ -838,9 +831,10 @@ $('terms-accept-btn').addEventListener('click', async ()=>{
   const user = pendingNewUser;
   const isAdmin = user.email === ADMIN_EMAIL;
   const ref = db.collection('users').doc(user.uid);
+  const chosenName = $('terms-name-input').value.trim() || user.displayName || 'Sans nom';
   myProfile = {
     uid: user.uid,
-    name: user.displayName || 'Sans nom',
+    name: chosenName,
     email: user.email,
     photoURL: user.photoURL || '',
     bio: isAdmin ? 'Compte officiel XMEN JUNNY CHAT ✓' : 'Salut, j\'utilise XMEN JUNNY CHAT !',
@@ -848,20 +842,19 @@ $('terms-accept-btn').addEventListener('click', async ()=>{
     verified: isAdmin,
     status: 'active',
     suspendedUntil: null,
+    permanent: false,
+    suspensionReason: null,
     appealStatus: null,
     appealMessage: '',
     themeColor: 'jade',
-    wallpaper: 'wp-plain',
+    wallpapers: {},
+    mutedChannels: [],
     acceptedTerms: true,
     acceptedTermsAt: FieldValue.serverTimestamp(),
     createdAt: FieldValue.serverTimestamp()
   };
-  try{
-    await ref.set(myProfile);
-  }catch(err){
-    showToast('Erreur : ' + err.message);
-    return;
-  }
+  try{ await ref.set(myProfile); }
+  catch(err){ showToast('Erreur : ' + err.message); return; }
   renderAvatar($('profile-btn'), myProfile);
   applyTheme(myProfile.themeColor);
   $('terms-overlay').hidden = true;
@@ -870,31 +863,82 @@ $('terms-accept-btn').addEventListener('click', async ()=>{
 });
 
 /* ---- Suspension / appeal (account review) ---- */
+function watchOwnDocWhileSuspended(uid){
+  if(ownDocUnsub) ownDocUnsub();
+  ownDocUnsub = db.collection('users').doc(uid).onSnapshot(snap=>{
+    if(!snap.exists) return;
+    const data = snap.data();
+    myProfile = {...myProfile, ...data};
+    if(data.status === 'active'){
+      showAcceptedScreen();
+    } else {
+      showSuspendedScreen(data);
+    }
+  });
+}
+function showAcceptedScreen(){
+  $('suspended-icon').textContent = '✅';
+  $('suspended-title').textContent = 'Examen accepté';
+  $('suspended-detail').textContent = 'Ton compte a été réactivé. Tu peux maintenant essayer de te reconnecter.';
+  $('suspended-reason-tag').hidden = true;
+  $('suspended-appeal-guidelines').hidden = true;
+  $('suspended-appeal-status').hidden = true;
+  $('suspended-appeal-btn').style.display = 'none';
+  $('suspended-reconnect-btn').style.display = 'block';
+  $('suspended-screen').hidden = false;
+}
 function showSuspendedScreen(profile){
+  const permanent = profile.permanent === true;
   const until = profile.suspendedUntil;
-  $('suspended-detail').textContent = until
-    ? 'Suspendu jusqu\'au ' + until.toDate().toLocaleString('fr-FR')
-    : 'Suspension définitive. Contacte l\'administrateur.';
+
+  $('suspended-reconnect-btn').style.display = 'none';
+  $('suspended-appeal-btn').style.display = 'block';
+
+  if(permanent){
+    $('suspended-icon').textContent = '⛔';
+    $('suspended-title').textContent = 'Compte banni définitivement';
+    $('suspended-detail').textContent = 'Ton compte a été banni de façon permanente pour non-respect des règles. Aucun nouvel examen n\'est possible.';
+  } else {
+    $('suspended-icon').textContent = '⏳';
+    $('suspended-title').textContent = 'Compte suspendu';
+    $('suspended-detail').textContent = until
+      ? 'Suspendu jusqu\'au ' + until.toDate().toLocaleString('fr-FR')
+      : 'Suspension temporaire. Contacte l\'administrateur pour plus d\'informations.';
+  }
+
+  const reasonTag = $('suspended-reason-tag');
+  if(profile.suspensionReason){
+    reasonTag.hidden = false;
+    reasonTag.textContent = 'Motif : ' + profile.suspensionReason;
+  } else {
+    reasonTag.hidden = true;
+  }
 
   const appealBtn = $('suspended-appeal-btn');
   const guidelines = $('suspended-appeal-guidelines');
   const statusBox = $('suspended-appeal-status');
 
-  if(profile.appealStatus === 'pending'){
-    appealBtn.hidden = true;
+  if(permanent){
+    appealBtn.style.display = 'none';
+    guidelines.hidden = true;
+    statusBox.hidden = false;
+    statusBox.className = 'appeal-status banned';
+    statusBox.textContent = '⛔ Ce bannissement est définitif, aucune nouvelle demande n\'est possible.';
+  } else if(profile.appealStatus === 'pending'){
+    appealBtn.style.display = 'none';
     guidelines.hidden = false;
     statusBox.hidden = false;
     statusBox.className = 'appeal-status pending';
     statusBox.textContent = '⏳ Ta demande d\'examen est en cours. Un.e administrateur.trice va l\'examiner sous peu.';
   } else if(profile.appealStatus === 'rejected'){
-    appealBtn.hidden = false;
+    appealBtn.style.display = 'block';
     appealBtn.textContent = 'Redemander un examen';
     guidelines.hidden = true;
     statusBox.hidden = false;
     statusBox.className = 'appeal-status rejected';
     statusBox.textContent = '✕ Ta demande précédente a été refusée. Tu peux en soumettre une nouvelle.';
   } else {
-    appealBtn.hidden = false;
+    appealBtn.style.display = 'block';
     appealBtn.textContent = 'Demander un examen';
     guidelines.hidden = true;
     statusBox.hidden = true;
@@ -902,9 +946,35 @@ function showSuspendedScreen(profile){
 
   $('suspended-screen').hidden = false;
 }
-$('suspended-signout-btn').addEventListener('click', ()=>{
+$('suspended-menu-btn').addEventListener('click', ()=>{
+  $('suspended-menu-sheet').hidden = !$('suspended-menu-sheet').hidden;
+});
+$('suspended-switch-account-btn').addEventListener('click', ()=>{
+  $('suspended-menu-sheet').hidden = true;
+  if(ownDocUnsub){ ownDocUnsub(); ownDocUnsub = null; }
   $('suspended-screen').hidden = true;
   auth.signOut();
+});
+$('suspended-signout-btn').addEventListener('click', ()=>{
+  if(ownDocUnsub){ ownDocUnsub(); ownDocUnsub = null; }
+  $('suspended-screen').hidden = true;
+  auth.signOut();
+});
+$('suspended-reconnect-btn').addEventListener('click', async ()=>{
+  if(ownDocUnsub){ ownDocUnsub(); ownDocUnsub = null; }
+  if(auth.currentUser){
+    try{
+      const ref = db.collection('users').doc(auth.currentUser.uid);
+      const snap = await ref.get();
+      await ensureProfile(auth.currentUser, snap);
+      finishLogin();
+    }catch(err){
+      if(err.message !== 'account-suspended') showToast('Erreur : ' + err.message);
+    }
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err=>showToast('Erreur de connexion : ' + err.message));
+  }
 });
 $('suspended-appeal-btn').addEventListener('click', ()=>{
   $('appeal-text-input').value = '';
@@ -927,36 +997,56 @@ $('submit-appeal-btn').addEventListener('click', async ()=>{
       createdAt: FieldValue.serverTimestamp(),
       status: 'pending'
     });
-  }catch(err){
-    showToast('Erreur : ' + err.message);
-    return;
-  }
+  }catch(err){ showToast('Erreur : ' + err.message); return; }
   if(myProfile) myProfile.appealStatus = 'pending';
   closeModal('appeal-overlay');
   showSuspendedScreen(myProfile || {appealStatus:'pending', suspendedUntil:null});
   showToast('Demande envoyée');
 });
 
+/* ========================= PROFILE MODAL ========================= */
 $('profile-btn').addEventListener('click', ()=>{
-  $('profile-modal-name').innerHTML = myProfile.name + (myProfile.role==='admin' ? ' ' + sealHTML() : '');
+  $('profile-modal-name').innerHTML = escapeHTML(myProfile.name) + (myProfile.role==='admin' ? ' ' + sealHTML() : '');
   $('profile-modal-email').textContent = myProfile.email;
+  $('profile-name-input').value = myProfile.name || '';
   $('profile-bio-input').value = myProfile.bio || '';
   renderAvatar($('profile-modal-avatar'), myProfile);
   renderThemeSwatches();
   renderWallpaperSwatches();
   $('open-admin-panel-btn').hidden = myProfile.role !== 'admin';
+  if(myProfile.role === 'admin') refreshAdminPendingBadge();
   $('add-account-results').innerHTML = '';
   $('add-account-search').value = '';
   openModal('profile-modal');
 });
 $('save-profile-btn').addEventListener('click', async ()=>{
+  const name = $('profile-name-input').value.trim() || myProfile.name;
   const bio = $('profile-bio-input').value.trim();
-  await db.collection('users').doc(currentUser.uid).update({bio});
-  myProfile.bio = bio;
+  await db.collection('users').doc(currentUser.uid).update({name, bio});
+  myProfile.name = name; myProfile.bio = bio;
+  renderAvatar($('profile-btn'), myProfile);
   closeModal('profile-modal');
   showToast('Profil mis à jour');
 });
 $('signout-btn').addEventListener('click', ()=>{ auth.signOut(); });
+
+/* ---- profile photo upload ---- */
+$('profile-avatar-edit-btn').addEventListener('click', ()=> $('profile-photo-input').click());
+$('profile-photo-input').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  showToast('Import de la photo…');
+  try{
+    const url = await uploadFile(file, `avatars/${currentUser.uid}_${Date.now()}`);
+    await db.collection('users').doc(currentUser.uid).update({photoURL:url});
+    myProfile.photoURL = url;
+    try{ await currentUser.updateProfile({photoURL:url}); }catch(_e){}
+    renderAvatar($('profile-modal-avatar'), myProfile);
+    renderAvatar($('profile-btn'), myProfile);
+    showToast('Photo de profil mise à jour');
+  }catch(err){ showToast('Erreur d\'import : ' + err.message); }
+  e.target.value = '';
+});
 
 /* ========================= TABS ========================= */
 document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -976,18 +1066,28 @@ function startListeners(){
     usersCache = {};
     qs.forEach(d=> usersCache[d.id] = d.data());
     renderUserPicker();
-    renderChatList(); // names may depend on users cache
+    renderChatList();
     renderGroupList();
+    if(!$('admin-modal').hidden) renderAdminUserList($('admin-search-input').value.trim().toLowerCase());
+    refreshAdminPendingBadge();
   });
 
   chatsUnsub = db.collection('chats')
     .where('members','array-contains', currentUser.uid)
     .onSnapshot(qs=>{
-      chatsCache = {};
       qs.forEach(d=> chatsCache[d.id] = {id:d.id, ...d.data()});
+      // drop chats no longer containing us
+      Object.keys(chatsCache).forEach(id=>{
+        if(!qs.docs.find(d=>d.id===id)) delete chatsCache[id];
+      });
       renderChatList();
       renderGroupList();
     });
+
+  db.collection('chats').where('type','==','channel').onSnapshot(qs=>{
+    qs.forEach(d=> { if(!chatsCache[d.id]) chatsCache[d.id] = {id:d.id, ...d.data()}; else chatsCache[d.id] = {...chatsCache[d.id], ...d.data()}; });
+    renderChannelDirectory(qs.docs.map(d=>({id:d.id, ...d.data()})));
+  });
 
   statusesUnsub = db.collection('statuses').onSnapshot(qs=>{
     const items = [];
@@ -1003,28 +1103,43 @@ function startListeners(){
         const m = change.doc.data();
         const chatId = change.doc.ref.parent.parent.id;
         if(m.senderUid === currentUser.uid) return;
-        if(chatId === currentChatId) return; // already viewing
+        if(chatId === currentChatId) return;
         const sender = usersCache[m.senderUid];
         const label = m.type === 'voice' ? '🎤 Message vocal' : (m.text || 'Nouveau message');
         showToast((sender ? sender.name : 'Quelqu\'un') + ' : ' + label);
         if('Notification' in window && Notification.permission === 'granted' && document.hidden){
           new Notification(sender ? sender.name : 'Vibe', {body:label});
         }
-      });
-    }, err=>{ /* index may be required on first run — safe to ignore in demo */ console.warn(err); });
+      }); 
+    }, err=>{ console.warn(err); });
 
   stickersUnsub = db.collection('users').doc(currentUser.uid).collection('stickers')
     .onSnapshot(qs=>{
       mySavedStickers = [];
       qs.forEach(d=> mySavedStickers.push({id:d.id, ...d.data()}));
     });
+
+  if(myProfile.role === 'admin'){
+    appealsUnsub = db.collection('appeals').where('status','==','pending')
+      .onSnapshot(()=> refreshAdminPendingBadge());
+  }
+
+  broadcastUnsub = db.collection('broadcasts').where('createdAt','>', sessionStart)
+    .onSnapshot(qs=>{
+      qs.docChanges().forEach(change=>{
+        if(change.type !== 'added') return;
+        const b = change.doc.data();
+        showToast('📢 ' + b.text);
+      });
+    }, err=>{ console.warn(err); });
 }
 
 function stopListeners(){
-  [chatsUnsub, usersUnsub, statusesUnsub, msgUnsub, notifUnsub, stickersUnsub].forEach(u=> u && u());
+  [chatsUnsub, usersUnsub, statusesUnsub, msgUnsub, notifUnsub, stickersUnsub, appealsUnsub, broadcastUnsub].forEach(u=> u && u());
+  chatsCache = {};
 }
 
-/* ========================= CHAT LIST ========================= */
+/* ========================= CHAT LIST (discussions = chats + all users) ========================= */
 function otherMember(chat){
   const uid = chat.members.find(m=> m !== currentUser.uid);
   return usersCache[uid];
@@ -1034,19 +1149,24 @@ function chatDisplay(chat){
     const other = otherMember(chat);
     return {name: other ? other.name : 'Utilisateur', photoURL: other ? other.photoURL : '', verified: other ? other.role==='admin' : false};
   }
-  return {name: chat.name || 'Groupe', photoURL: chat.photoURL || '', verified: chat.createdBy === currentUser.uid ? myProfile.role==='admin' : false};
+  return {name: chat.name || 'Groupe', photoURL: chat.photoURL || '', verified: usersCache[chat.createdBy] ? usersCache[chat.createdBy].role==='admin' : false};
 }
 
 function renderChatList(){
   const list = $('chat-list');
-  const chats = Object.values(chatsCache).filter(c=> c.type === 'direct' || c.type === 'group' || c.type==='channel');
   const direct = Object.values(chatsCache).filter(c=>c.type==='direct');
-  if(direct.length === 0){
-    list.innerHTML = '<div class="empty">Aucune discussion pour l\'instant.<br>Touche + pour en démarrer une.</div>';
+  direct.sort((a,b)=> (b.lastMessageAt?.toMillis?.()||0) - (a.lastMessageAt?.toMillis?.()||0));
+
+  const chattedUids = new Set(direct.map(c=> c.members.find(m=>m!==currentUser.uid)));
+  const others = Object.values(usersCache).filter(u=> u.uid !== currentUser.uid && !chattedUids.has(u.uid));
+  others.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+
+  list.innerHTML = '';
+  if(direct.length === 0 && others.length === 0){
+    list.innerHTML = '<div class="empty">Personne d\'autre n\'est inscrit pour l\'instant.</div>';
     return;
   }
-  direct.sort((a,b)=> (b.lastMessageAt?.toMillis?.()||0) - (a.lastMessageAt?.toMillis?.()||0));
-  list.innerHTML = '';
+
   direct.forEach(chat=>{
     const disp = chatDisplay(chat);
     const row = document.createElement('div');
@@ -1054,7 +1174,7 @@ function renderChatList(){
     row.innerHTML = `
       <button class="avatar" style="pointer-events:none;"></button>
       <div class="meta">
-        <div class="name">${disp.name}${disp.verified ? sealHTML() : ''}</div>
+        <div class="name">${escapeHTML(disp.name)}${disp.verified ? sealHTML() : ''}</div>
         <div class="sub">${chat.lastMessage ? escapeHTML(chat.lastMessage) : 'Dites bonjour 👋'}</div>
       </div>
       <div class="time">${fmtTime(chat.lastMessageAt)}</div>
@@ -1063,38 +1183,79 @@ function renderChatList(){
     row.addEventListener('click', ()=> openConversation(chat.id));
     list.appendChild(row);
   });
+
+  if(others.length){
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'Autres membres';
+    list.appendChild(label);
+    others.forEach(u=>{
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <button class="avatar" style="pointer-events:none;"></button>
+        <div class="meta">
+          <div class="name">${escapeHTML(u.name)}${u.role==='admin'?sealHTML():''}</div>
+          <div class="sub">${escapeHTML(u.bio||'Dites bonjour 👋')}</div>
+        </div>
+      `;
+      renderAvatar(row.querySelector('.avatar'), u);
+      row.addEventListener('click', ()=> startDirectChat(u.uid));
+      list.appendChild(row);
+    });
+  }
 }
 
 function renderGroupList(){
   const list = $('group-list');
-  const groups = Object.values(chatsCache).filter(c=> c.type==='group' || c.type==='channel');
+  const groups = Object.values(chatsCache).filter(c=> (c.type==='group' || c.type==='channel') && (c.members||[]).includes(currentUser.uid));
   if(groups.length === 0){
-    list.innerHTML = '<div class="empty">Pas encore de groupe ou de chaîne.<br>Touche + pour en créer un.</div>';
-    return;
+    list.innerHTML = '<div class="empty">Pas encore de groupe ou de chaîne rejoint.</div>';
+  } else {
+    groups.sort((a,b)=> (b.lastMessageAt?.toMillis?.()||0) - (a.lastMessageAt?.toMillis?.()||0));
+    list.innerHTML = '';
+    groups.forEach(chat=> list.appendChild(buildGroupRow(chat, true)));
   }
-  groups.sort((a,b)=> (b.lastMessageAt?.toMillis?.()||0) - (a.lastMessageAt?.toMillis?.()||0));
-  list.innerHTML = '';
-  groups.forEach(chat=>{
-    const row = document.createElement('div');
-    row.className = 'row';
-    const isAdmin = usersCache[chat.createdBy] && usersCache[chat.createdBy].role === 'admin';
-    row.innerHTML = `
-      <button class="avatar" style="pointer-events:none; background:var(--paper-dim);">${chat.type==='channel' ? '📣' : '👥'}</button>
-      <div class="meta">
-        <div class="name">${escapeHTML(chat.name || 'Sans nom')}${isAdmin ? sealHTML() : ''} <span class="mono" style="font-size:0.65rem; color:#A69C88;">${chat.type === 'channel' ? 'CHAÎNE' : 'GROUPE'}</span></div>
-        <div class="sub">${chat.lastMessage ? escapeHTML(chat.lastMessage) : (chat.members||[]).length + ' membres'}</div>
-      </div>
-      <div class="time">${fmtTime(chat.lastMessageAt)}</div>
-    `;
-    row.addEventListener('click', ()=> openConversation(chat.id));
-    list.appendChild(row);
-  });
 }
 
-function escapeHTML(str){
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
+function buildGroupRow(chat, joined){
+  const row = document.createElement('div');
+  row.className = 'row';
+  const isAdmin = usersCache[chat.createdBy] && usersCache[chat.createdBy].role === 'admin';
+  const muted = joined && (myProfile.mutedChannels||[]).includes(chat.id);
+  row.innerHTML = `
+    <button class="avatar" style="pointer-events:none; background:var(--paper-dim);">${chat.type==='channel' ? '📣' : '👥'}</button>
+    <div class="meta">
+      <div class="name">${escapeHTML(chat.name || 'Sans nom')}${isAdmin ? sealHTML() : ''} <span class="mono" style="font-size:0.65rem; color:#A69C88;">${chat.type === 'channel' ? 'CHAÎNE' : 'GROUPE'}</span>${muted?' 🔕':''}</div>
+      <div class="sub">${chat.lastMessage ? escapeHTML(chat.lastMessage) : (chat.members||[]).length + ' membres'}</div>
+    </div>
+    <div class="time">${joined ? fmtTime(chat.lastMessageAt) : ''}</div>
+  `;
+  if(joined){
+    row.addEventListener('click', ()=> openConversation(chat.id));
+  } else {
+    const joinBtn = document.createElement('button');
+    joinBtn.className = 'mini-btn';
+    joinBtn.textContent = 'Rejoindre';
+    joinBtn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      await db.collection('chats').doc(chat.id).update({members: FieldValue.arrayUnion(currentUser.uid)});
+      showToast('Chaîne rejointe');
+    });
+    row.appendChild(joinBtn);
+  }
+  return row;
+}
+
+function renderChannelDirectory(allChannels){
+  const list = $('channel-directory-list');
+  const notJoined = allChannels.filter(c=> !(c.members||[]).includes(currentUser.uid));
+  if(notJoined.length === 0){
+    list.innerHTML = '<div class="empty">Aucune autre chaîne à rejoindre.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  notJoined.forEach(chat=> list.appendChild(buildGroupRow(chat, false)));
 }
 
 /* ========================= NEW DIRECT CHAT ========================= */
@@ -1118,15 +1279,22 @@ function renderUserPicker(){
 
 async function startDirectChat(otherUid){
   closeModal('new-chat-modal');
+  closeModal('profile-modal');
   const existing = Object.values(chatsCache).find(c=> c.type==='direct' && c.members.includes(otherUid));
   if(existing){ openConversation(existing.id); return; }
-  const ref = await db.collection('chats').add({
+  const localData = {
     type: 'direct',
     members: [currentUser.uid, otherUid],
     createdBy: currentUser.uid,
+    lastMessage: '', lastMessageAt: Timestamp.now()
+  };
+  const ref = await db.collection('chats').add({
+    ...localData,
     createdAt: FieldValue.serverTimestamp(),
-    lastMessage: '', lastMessageAt: FieldValue.serverTimestamp()
+    lastMessageAt: FieldValue.serverTimestamp()
   });
+  chatsCache[ref.id] = {id: ref.id, ...localData};
+  renderChatList();
   openConversation(ref.id);
 }
 
@@ -1156,16 +1324,20 @@ $('create-group-btn').addEventListener('click', async ()=>{
   if(!name){ showToast('Donne un nom au groupe'); return; }
   const checked = Array.from(document.querySelectorAll('#group-member-picker input:checked')).map(i=>i.value);
   const members = Array.from(new Set([currentUser.uid, ...checked]));
+  const localData = {
+    type: selectedGroupType, name, members, createdBy: currentUser.uid,
+    lastMessage: '', lastMessageAt: Timestamp.now()
+  };
   const ref = await db.collection('chats').add({
-    type: selectedGroupType,
-    name,
-    members,
-    createdBy: currentUser.uid,
+    ...localData,
     createdAt: FieldValue.serverTimestamp(),
-    lastMessage: '', lastMessageAt: FieldValue.serverTimestamp()
+    lastMessageAt: FieldValue.serverTimestamp()
   });
+  chatsCache[ref.id] = {id: ref.id, ...localData};
   $('group-name-input').value = '';
   closeModal('new-group-modal');
+  renderGroupList();
+  logEvent('create_group', {type: selectedGroupType, member_count: members.length});
   openConversation(ref.id);
 });
 
@@ -1173,6 +1345,7 @@ $('create-group-btn').addEventListener('click', async ()=>{
 function openConversation(chatId){
   currentChatId = chatId;
   const chat = chatsCache[chatId];
+  if(!chat){ showToast('Chargement…'); currentChatId = null; return; }
   const disp = chat.type === 'direct' ? chatDisplay(chat) : {name: chat.name, photoURL: chat.photoURL, verified: usersCache[chat.createdBy]?.role==='admin'};
   $('conv-name').innerHTML = escapeHTML(disp.name) + (disp.verified ? ' ' + sealHTML() : '');
   $('conv-sub').textContent = chat.type === 'direct' ? 'Discussion privée' : (chat.type === 'channel' ? 'Chaîne' : (chat.members||[]).length + ' membres');
@@ -1182,13 +1355,30 @@ function openConversation(chatId){
   $('composer').style.display = canPost ? 'flex' : 'none';
   $('channel-note').hidden = canPost;
 
-  // Show a WhatsApp-style banner whenever the other side is an official / verified account.
   const bannerEl = $('official-banner');
-  if(disp.verified){
+  if(disp.verified && chat.type === 'direct'){
     bannerEl.hidden = false;
     bannerEl.innerHTML = '✓ Ceci est le compte officiel et vérifié de XMEN JUNNY CHAT.';
   } else {
     bannerEl.hidden = true;
+  }
+
+  // conv menu: join/mute toggle for channels
+  const joinToggleBtn = $('conv-join-toggle-btn');
+  if(chat.type === 'channel'){
+    const muted = (myProfile.mutedChannels||[]).includes(chatId);
+    joinToggleBtn.hidden = false;
+    joinToggleBtn.textContent = muted ? '🔔 Activer les notifications' : '🔕 Couper les notifications';
+    joinToggleBtn.onclick = async ()=>{
+      const list = new Set(myProfile.mutedChannels||[]);
+      if(muted) list.delete(chatId); else list.add(chatId);
+      myProfile.mutedChannels = Array.from(list);
+      await db.collection('users').doc(currentUser.uid).update({mutedChannels: myProfile.mutedChannels});
+      closeModal('conv-menu-modal');
+      showToast(muted ? 'Notifications activées' : 'Notifications coupées');
+    };
+  } else {
+    joinToggleBtn.hidden = true;
   }
 
   $('conversation').classList.add('open');
@@ -1196,7 +1386,7 @@ function openConversation(chatId){
   Array.from(msgsEl.children).forEach(child=>{
     if(child.id !== 'official-banner' && child.id !== 'channel-note') child.remove();
   });
-  applyWallpaper();
+  applyWallpaper(chatId);
 
   if(msgUnsub) msgUnsub();
   msgUnsub = db.collection('chats').doc(chatId).collection('messages')
@@ -1231,7 +1421,7 @@ function renderMessage(m){
   } else if(m.type === 'voice'){
     inner += `<div class="bubble"><audio controls src="${m.mediaUrl}"></audio></div>`;
   } else if(m.type === 'image'){
-    inner += `<div class="bubble"><img src="${m.mediaUrl}" style="max-width:100%;border-radius:10px;display:block;"></div>`;
+    inner += `<div class="bubble"><img src="${m.mediaUrl}" style="max-width:100%;border-radius:12px;display:block;"></div>`;
   } else if(m.viewOnce && !out){
     if(m.viewed){
       inner += `<div class="viewonce-tile consumed">👁 Message vu</div>`;
@@ -1267,35 +1457,25 @@ async function sendMessage(text){
     senderVerified: myProfile.role === 'admin',
     createdAt: FieldValue.serverTimestamp()
   };
-  if(voActive){
-    payload.viewOnce = true;
-    payload.viewed = false;
-  }
+  if(voActive){ payload.viewOnce = true; payload.viewed = false; }
   await db.collection('chats').doc(currentChatId).collection('messages').add(payload);
   await db.collection('chats').doc(currentChatId).update({
     lastMessage: voActive ? '👁 Message vue unique' : text.trim(),
     lastMessageAt: FieldValue.serverTimestamp()
   });
-  if(voActive){
-    voActive = false;
-    $('vo-toggle').classList.remove('active');
-  }
+  logEvent('send_message', {chat_type: chatsCache[currentChatId]?.type || 'unknown', view_once: !!voActive});
+  if(voActive){ voActive = false; $('vo-toggle').classList.remove('active'); }
 }
 $('send-btn').addEventListener('click', ()=>{
   const input = $('msg-input');
   sendMessage(input.value);
   input.value = '';
 });
-$('msg-input').addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){ $('send-btn').click(); }
-});
+$('msg-input').addEventListener('keydown', e=>{ if(e.key === 'Enter'){ $('send-btn').click(); } });
 
 /* ========================= VOICE MESSAGES ========================= */
 $('mic-btn').addEventListener('click', async ()=>{
-  if(mediaRecorder && mediaRecorder.state === 'recording'){
-    mediaRecorder.stop();
-    return;
-  }
+  if(mediaRecorder && mediaRecorder.state === 'recording'){ mediaRecorder.stop(); return; }
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     recordedChunks = [];
@@ -1306,57 +1486,62 @@ $('mic-btn').addEventListener('click', async ()=>{
       stream.getTracks().forEach(t=>t.stop());
       const blob = new Blob(recordedChunks, {type:'audio/webm'});
       showToast('Envoi du vocal…');
-      const path = `voice/${currentChatId}/${Date.now()}_${currentUser.uid}.webm`;
-      const ref = storage.ref().child(path);
-      await ref.put(blob);
-      const url = await ref.getDownloadURL();
+      const url = await uploadFile(blob, `voice/${currentChatId}/${Date.now()}_${currentUser.uid}.webm`);
       await db.collection('chats').doc(currentChatId).collection('messages').add({
-        senderUid: currentUser.uid,
-        type: 'voice',
-        mediaUrl: url,
-        senderVerified: myProfile.role === 'admin',
-        createdAt: FieldValue.serverTimestamp()
+        senderUid: currentUser.uid, type: 'voice', mediaUrl: url,
+        senderVerified: myProfile.role === 'admin', createdAt: FieldValue.serverTimestamp()
       });
       await db.collection('chats').doc(currentChatId).update({
-        lastMessage: '🎤 Message vocal',
-        lastMessageAt: FieldValue.serverTimestamp()
+        lastMessage: '🎤 Message vocal', lastMessageAt: FieldValue.serverTimestamp()
       });
     };
     mediaRecorder.start();
     $('mic-btn').classList.add('recording');
     showToast('Enregistrement… touche à nouveau pour envoyer');
-  }catch(err){
-    showToast('Micro indisponible : ' + err.message);
-  }
+  }catch(err){ showToast('Micro indisponible : ' + err.message); }
 });
 
-/* ========================= STATUS ========================= */
+/* ========================= STATUS (multi-item stories) ========================= */
 const SWATCHES = ['#0E7C6B','#E2725B','#3A5FCD','#C1432E','#8A6D3B','#14231F'];
 SWATCHES.forEach((c,i)=>{
   const el = document.createElement('div');
   el.className = 'swatch' + (i===0 ? ' selected':'');
   el.style.background = c;
   el.addEventListener('click', ()=>{
-    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
+    document.querySelectorAll('#status-swatches .swatch').forEach(s=>s.classList.remove('selected'));
     el.classList.add('selected');
     selectedStatusColor = c;
   });
   $('status-swatches').appendChild(el);
 });
 
-$('new-status-fab').addEventListener('click', ()=> openModal('status-modal'));
+$('new-status-fab').addEventListener('click', ()=>{
+  statusMediaFile = null;
+  $('status-media-input').value = '';
+  $('status-text-input').value = '';
+  openModal('status-modal');
+});
+$('status-media-input').addEventListener('change', e=>{ statusMediaFile = e.target.files[0] || null; });
+
 $('publish-status-btn').addEventListener('click', async ()=>{
   const text = $('status-text-input').value.trim();
-  if(!text){ showToast('Écris quelque chose'); return; }
+  if(!text && !statusMediaFile){ showToast('Écris quelque chose ou ajoute une photo/vidéo'); return; }
+  let mediaUrl = null, mediaType = null;
+  if(statusMediaFile){
+    showToast('Envoi du média…');
+    try{
+      mediaUrl = await uploadFile(statusMediaFile, `status/${currentUser.uid}/${Date.now()}_${statusMediaFile.name}`);
+      mediaType = statusMediaFile.type.startsWith('video') ? 'video' : 'image';
+    }catch(err){ showToast('Erreur d\'import : ' + err.message); return; }
+  }
   await db.collection('statuses').add({
-    uid: currentUser.uid,
-    text,
-    bgColor: selectedStatusColor,
-    verified: myProfile.role === 'admin',
-    createdAt: FieldValue.serverTimestamp()
+    uid: currentUser.uid, text, bgColor: selectedStatusColor,
+    mediaUrl, mediaType,
+    verified: myProfile.role === 'admin', createdAt: FieldValue.serverTimestamp()
   });
-  $('status-text-input').value = '';
+  statusMediaFile = null;
   closeModal('status-modal');
+  logEvent('post_status', {has_media: !!mediaUrl, media_type: mediaType || 'text'});
   showToast('Statut publié');
 });
 
@@ -1366,62 +1551,103 @@ function renderStatusList(items){
   const fresh = items.filter(s=> s.createdAt && (now - s.createdAt.toMillis()) < DAY);
   const byUser = {};
   fresh.forEach(s=>{
-    if(!byUser[s.uid] || s.createdAt.toMillis() > byUser[s.uid].createdAt.toMillis()) byUser[s.uid] = s;
+    if(!byUser[s.uid]) byUser[s.uid] = [];
+    byUser[s.uid].push(s);
   });
+  Object.values(byUser).forEach(arr=> arr.sort((a,b)=> a.createdAt.toMillis() - b.createdAt.toMillis()));
 
-  // my status row
   const mine = byUser[currentUser.uid];
   const myRow = $('my-status-row');
   myRow.innerHTML = '';
   const row = document.createElement('div');
   row.className = 'row';
   row.innerHTML = `<div class="status-ring ${mine?'':'seen'}"><button class="avatar" style="pointer-events:none;"></button></div>
-    <div class="meta"><div class="name">Mon statut</div><div class="sub">${mine ? 'Touche pour voir' : 'Touche + pour ajouter'}</div></div>`;
+    <div class="meta"><div class="name">Mon statut</div><div class="sub">${mine ? mine.length + ' statut(s) actif(s) — toucher pour voir' : 'Touche + pour ajouter'}</div></div>`;
   renderAvatar(row.querySelector('.avatar'), myProfile);
-  if(mine) row.addEventListener('click', ()=> viewStatus(mine));
+  if(mine) row.addEventListener('click', ()=> viewStatusStory(mine));
   myRow.appendChild(row);
 
   const list = $('status-list');
   list.innerHTML = '';
-  const others = Object.values(byUser).filter(s=> s.uid !== currentUser.uid);
-  if(others.length === 0){
+  const otherUids = Object.keys(byUser).filter(uid=> uid !== currentUser.uid);
+  if(otherUids.length === 0){
     list.innerHTML = '<div class="empty">Aucun statut récent.</div>';
     return;
   }
-  others.sort((a,b)=> b.createdAt.toMillis() - a.createdAt.toMillis());
-  others.forEach(s=>{
-    const u = usersCache[s.uid];
+  otherUids.sort((a,b)=> byUser[b][byUser[b].length-1].createdAt.toMillis() - byUser[a][byUser[a].length-1].createdAt.toMillis());
+  otherUids.forEach(uid=>{
+    const arr = byUser[uid];
+    const u = usersCache[uid];
     const r = document.createElement('div');
     r.className = 'row';
     r.innerHTML = `<div class="status-ring"><button class="avatar" style="pointer-events:none;"></button></div>
-      <div class="meta"><div class="name">${u?escapeHTML(u.name):'…'}${s.verified?sealHTML():''}</div><div class="sub">${fmtTime(s.createdAt)}</div></div>`;
+      <div class="meta"><div class="name">${u?escapeHTML(u.name):'…'}${arr[0].verified?sealHTML():''}</div><div class="sub">${arr.length} statut(s) · ${fmtTime(arr[arr.length-1].createdAt)}</div></div>`;
     renderAvatar(r.querySelector('.avatar'), u);
-    r.addEventListener('click', ()=> viewStatus(s));
+    r.addEventListener('click', ()=> viewStatusStory(arr));
     list.appendChild(r);
   });
 }
 
-function viewStatus(s){
+let storyItems = [], storyIndex = 0, storyTimer = null;
+function viewStatusStory(items){
+  storyItems = items; storyIndex = 0;
+  buildStoryProgress();
+  showStoryItem();
+  $('status-viewer').hidden = false;
+}
+function buildStoryProgress(){
+  const wrap = $('status-progress-row');
+  wrap.innerHTML = '';
+  storyItems.forEach(()=>{
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.innerHTML = '<span></span>';
+    wrap.appendChild(seg);
+  });
+}
+function showStoryItem(){
+  clearTimeout(storyTimer);
+  const s = storyItems[storyIndex];
   const u = usersCache[s.uid] || myProfile;
   $('sv-name').innerHTML = escapeHTML(u.name) + (s.verified ? ' ' + sealHTML() : '');
   renderAvatar($('sv-avatar'), u);
   $('sv-body').style.background = s.bgColor || 'var(--ink)';
-  $('sv-body').innerHTML = `<div style="color:#fff;">${escapeHTML(s.text)}</div>`;
-  $('status-viewer').hidden = false;
-  const bar = $('status-progress-bar');
-  bar.style.transition = 'none';
-  bar.style.width = '0%';
+  const content = $('sv-content');
+  if(s.mediaUrl && s.mediaType === 'video'){
+    content.innerHTML = `<video src="${s.mediaUrl}" autoplay muted playsinline></video>`;
+  } else if(s.mediaUrl){
+    content.innerHTML = `<img src="${s.mediaUrl}">${s.text ? `<div style="color:#fff; margin-top:10px;">${escapeHTML(s.text)}</div>` : ''}`;
+  } else {
+    content.innerHTML = `<div style="color:#fff;">${escapeHTML(s.text)}</div>`;
+  }
+
+  const segs = $('status-progress-row').children;
+  Array.from(segs).forEach((seg,i)=>{
+    const bar = seg.querySelector('span');
+    bar.style.transition = 'none'; bar.style.width = i < storyIndex ? '100%' : '0%';
+  });
   requestAnimationFrame(()=>{
+    const bar = segs[storyIndex].querySelector('span');
     bar.style.transition = 'width 5s linear';
     bar.style.width = '100%';
   });
-  clearTimeout(viewStatus._t);
-  viewStatus._t = setTimeout(()=> $('status-viewer').hidden = true, 5000);
+  storyTimer = setTimeout(nextStoryItem, 5000);
 }
-$('sv-close').addEventListener('click', ()=>{
-  clearTimeout(viewStatus._t);
+function nextStoryItem(){
+  if(storyIndex < storyItems.length - 1){ storyIndex++; showStoryItem(); }
+  else { closeStoryViewer(); }
+}
+function prevStoryItem(){
+  if(storyIndex > 0){ storyIndex--; showStoryItem(); }
+  else { showStoryItem(); }
+}
+function closeStoryViewer(){
+  clearTimeout(storyTimer);
   $('status-viewer').hidden = true;
-});
+}
+$('sv-close').addEventListener('click', closeStoryViewer);
+$('sv-tap-next').addEventListener('click', nextStoryItem);
+$('sv-tap-prev').addEventListener('click', prevStoryItem);
 
 /* ========================= THEME (app color) ========================= */
 const THEME_PRESETS = {
@@ -1430,7 +1656,8 @@ const THEME_PRESETS = {
   indigo:{accent:'#3A5FCD', deep:'#28409B', tint:'#DFE6FA'},
   plum:  {accent:'#7B4B94', deep:'#5C3670', tint:'#EDE1F2'},
   amber: {accent:'#B8860B', deep:'#8C6508', tint:'#F4E8C8'},
-  slate: {accent:'#4B5A5A', deep:'#333F3F', tint:'#E1E7E7'}
+  slate: {accent:'#4B5A5A', deep:'#333F3F', tint:'#E1E7E7'},
+  ios:   {accent:'#0A84FF', deep:'#0060DB', tint:'#DCEBFF'}
 };
 function applyTheme(key){
   const t = THEME_PRESETS[key] || THEME_PRESETS.jade;
@@ -1456,7 +1683,7 @@ function renderThemeSwatches(){
   });
 }
 
-/* ========================= WALLPAPER (chat background) ========================= */
+/* ========================= WALLPAPER (per-conversation) ========================= */
 const WALLPAPER_PRESETS = [
   {key:'wp-plain', color:'#F6F2E9'},
   {key:'wp-sand',  color:'#EFE9DC'},
@@ -1468,23 +1695,58 @@ const WALLPAPER_PRESETS = [
 function renderWallpaperSwatches(){
   const wrap = $('wallpaper-swatches');
   wrap.innerHTML = '';
+  const chatId = currentChatId;
+  const current = chatId ? (myProfile.wallpapers && myProfile.wallpapers[chatId]) : null;
+  if(!chatId){
+    wrap.innerHTML = '<div style="font-size:0.78rem; color:#8A8171;">Ouvre d\'abord une discussion pour lui choisir un fond.</div>';
+    $('import-wallpaper-btn').style.display = 'none';
+    return;
+  }
+  $('import-wallpaper-btn').style.display = 'flex';
   WALLPAPER_PRESETS.forEach(w=>{
     const el = document.createElement('div');
-    el.className = 'wp-swatch' + (myProfile.wallpaper === w.key ? ' selected':'');
+    const isSelected = !current || current === w.key;
+    el.className = 'wp-swatch' + (isSelected && (!current || current===w.key) ? ' selected':'');
     el.style.background = w.color;
     el.addEventListener('click', async ()=>{
-      myProfile.wallpaper = w.key;
+      myProfile.wallpapers = myProfile.wallpapers || {};
+      myProfile.wallpapers[chatId] = w.key;
       renderWallpaperSwatches();
-      applyWallpaper();
-      await db.collection('users').doc(currentUser.uid).update({wallpaper:w.key});
+      applyWallpaper(chatId);
+      await db.collection('users').doc(currentUser.uid).update({['wallpapers.'+chatId]: w.key});
     });
     wrap.appendChild(el);
   });
 }
-function applyWallpaper(){
+$('import-wallpaper-btn').addEventListener('click', ()=> $('wallpaper-photo-input').click());
+$('wallpaper-photo-input').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  const chatId = currentChatId;
+  if(!file || !chatId) return;
+  showToast('Import du fond d\'écran…');
+  try{
+    const url = await uploadFile(file, `wallpapers/${currentUser.uid}/${chatId}_${Date.now()}`);
+    myProfile.wallpapers = myProfile.wallpapers || {};
+    myProfile.wallpapers[chatId] = url;
+    await db.collection('users').doc(currentUser.uid).update({['wallpapers.'+chatId]: url});
+    applyWallpaper(chatId);
+    renderWallpaperSwatches();
+    showToast('Fond d\'écran mis à jour');
+  }catch(err){ showToast('Erreur d\'import : ' + err.message); }
+  e.target.value = '';
+});
+function applyWallpaper(chatId){
   const el = $('messages');
   WALLPAPER_PRESETS.forEach(w=> el.classList.remove(w.key));
-  el.classList.add(myProfile.wallpaper || 'wp-plain');
+  el.classList.remove('wp-custom');
+  el.style.backgroundImage = '';
+  const val = chatId && myProfile.wallpapers ? myProfile.wallpapers[chatId] : null;
+  if(val && val.startsWith('http')){
+    el.classList.add('wp-custom');
+    el.style.backgroundImage = `url("${val}")`;
+  } else {
+    el.classList.add(val || 'wp-plain');
+  }
 }
 
 /* ========================= ADD ACCOUNT (search contacts) ========================= */
@@ -1503,10 +1765,7 @@ $('add-account-search').addEventListener('input', ()=>{
       row.innerHTML = `<button class="avatar" style="pointer-events:none;"></button>
         <div class="meta"><div class="name">${escapeHTML(u.name)}${u.role==='admin'?sealHTML():''}</div><div class="sub">${escapeHTML(u.email||'')}</div></div>`;
       renderAvatar(row.querySelector('.avatar'), u);
-      row.addEventListener('click', ()=>{
-        closeModal('profile-modal');
-        startDirectChat(u.uid);
-      });
+      row.addEventListener('click', ()=> startDirectChat(u.uid));
       wrap.appendChild(row);
     });
   if(wrap.innerHTML === '') wrap.innerHTML = '<div class="empty" style="padding:20px;">Aucun résultat</div>';
@@ -1524,7 +1783,6 @@ const DEFAULT_STICKERS = [
   {emoji:'✅', label:'Fait', color:'#DCEFE9'}
 ];
 let mySavedStickers = [];
-let stickersUnsub = null;
 let selectedStickerColor = '#DCEFE9';
 
 $('sticker-btn').addEventListener('click', ()=>{
@@ -1553,22 +1811,12 @@ async function sendSticker(s){
   if(!currentChatId) return;
   closeModal('sticker-modal');
   await db.collection('chats').doc(currentChatId).collection('messages').add({
-    senderUid: currentUser.uid,
-    type: 'sticker',
-    emoji: s.emoji,
-    stickerColor: s.color,
-    stickerLabel: s.label,
-    senderVerified: myProfile.role === 'admin',
-    createdAt: FieldValue.serverTimestamp()
+    senderUid: currentUser.uid, type: 'sticker', emoji: s.emoji, stickerColor: s.color, stickerLabel: s.label,
+    senderVerified: myProfile.role === 'admin', createdAt: FieldValue.serverTimestamp()
   });
-  await db.collection('chats').doc(currentChatId).update({
-    lastMessage: '🎨 Sticker', lastMessageAt: FieldValue.serverTimestamp()
-  });
+  await db.collection('chats').doc(currentChatId).update({lastMessage: '🎨 Sticker', lastMessageAt: FieldValue.serverTimestamp()});
 }
-$('open-create-sticker-btn').addEventListener('click', ()=>{
-  closeModal('sticker-modal');
-  openModal('create-sticker-modal');
-});
+$('open-create-sticker-btn').addEventListener('click', ()=>{ closeModal('sticker-modal'); openModal('create-sticker-modal'); });
 const STICKER_SWATCHES = ['#DCEFE9','#FBE3DC','#DFE6FA','#EDE1F2','#F4E8C8','#F6DEDA'];
 STICKER_SWATCHES.forEach((c,i)=>{
   const el = document.createElement('div');
@@ -1604,33 +1852,27 @@ async function markMessageViewed(chatId, msgId){
   await db.collection('chats').doc(chatId).collection('messages').doc(msgId).update({viewed:true});
 }
 function openViewOnce(chatId, msgId, text){
+  closeStoryViewer();
   $('sv-name').innerHTML = 'Message à vue unique';
   $('sv-avatar').innerHTML = '👁';
   $('sv-body').style.background = 'var(--ink)';
-  $('sv-body').innerHTML = `<div style="color:#fff;">${escapeHTML(text||'')}</div>`;
+  $('status-progress-row').innerHTML = '<div class="seg"><span></span></div>';
+  $('sv-content').innerHTML = `<div style="color:#fff;">${escapeHTML(text||'')}</div>`;
   $('status-viewer').hidden = false;
-  const bar = $('status-progress-bar');
+  const bar = $('status-progress-row').querySelector('span');
   bar.style.transition = 'none'; bar.style.width = '0%';
   requestAnimationFrame(()=>{ bar.style.transition = 'width 6s linear'; bar.style.width = '100%'; });
   markMessageViewed(chatId, msgId);
-  clearTimeout(viewStatus._t);
-  viewStatus._t = setTimeout(()=> $('status-viewer').hidden = true, 6000);
+  clearTimeout(storyTimer);
+  storyTimer = setTimeout(()=> $('status-viewer').hidden = true, 6000);
 }
 
 /* ========================= REPORT ========================= */
 $('conv-menu-btn').addEventListener('click', ()=> openModal('conv-menu-modal'));
-$('report-open-btn').addEventListener('click', ()=>{
-  closeModal('conv-menu-modal');
-  openModal('report-modal');
-});
+$('report-open-btn').addEventListener('click', ()=>{ closeModal('conv-menu-modal'); openModal('report-modal'); });
 $('submit-report-btn').addEventListener('click', async ()=>{
   const reason = document.querySelector('#report-reasons input:checked').value;
-  await db.collection('reports').add({
-    reporterUid: currentUser.uid,
-    chatId: currentChatId,
-    reason,
-    createdAt: FieldValue.serverTimestamp()
-  });
+  await db.collection('reports').add({ reporterUid: currentUser.uid, chatId: currentChatId, reason, createdAt: FieldValue.serverTimestamp() });
   closeModal('report-modal');
   showToast('Signalement envoyé, merci.');
 });
@@ -1638,10 +1880,82 @@ $('submit-report-btn').addEventListener('click', async ()=>{
 /* ========================= ADMIN PANEL ========================= */
 $('open-admin-panel-btn').addEventListener('click', ()=>{
   closeModal('profile-modal');
+  renderAdminAppealsList();
   renderAdminUserList('');
   openModal('admin-modal');
 });
 $('admin-search-input').addEventListener('input', ()=> renderAdminUserList($('admin-search-input').value.trim().toLowerCase()));
+
+async function refreshAdminPendingBadge(){
+  if(!myProfile || myProfile.role !== 'admin') return;
+  try{
+    const qs = await db.collection('appeals').where('status','==','pending').get();
+    const badge = $('admin-pending-badge');
+    if(qs.size > 0){ badge.hidden = false; badge.textContent = qs.size; }
+    else { badge.hidden = true; }
+  }catch(_e){}
+}
+
+async function renderAdminAppealsList(){
+  const wrap = $('admin-appeals-list');
+  wrap.innerHTML = '<div class="empty" style="padding:16px;">Chargement…</div>';
+  let qs;
+  try{ qs = await db.collection('appeals').where('status','==','pending').orderBy('createdAt','desc').get(); }
+  catch(err){ wrap.innerHTML = '<div class="empty" style="padding:16px;">Erreur de chargement</div>'; return; }
+  if(qs.empty){ wrap.innerHTML = '<div class="empty" style="padding:16px;">Aucune demande en attente.</div>'; return; }
+  wrap.innerHTML = '';
+  qs.forEach(doc=>{
+    const a = doc.data();
+    const u = usersCache[a.uid];
+    const row = document.createElement('div');
+    row.className = 'admin-row';
+    row.innerHTML = `
+      <button class="avatar" style="pointer-events:none;"></button>
+      <div class="meta">
+        <div class="name">${escapeHTML(a.name || (u?u.name:''))}</div>
+        <div class="sub">${escapeHTML(a.email||'')}</div>
+        <div class="appeal-note">📝 ${escapeHTML(a.message || '(sans message)')}</div>
+      </div>
+    `;
+    if(u) renderAvatar(row.querySelector('.avatar'), u);
+    const actions = document.createElement('div');
+    actions.style.width = '100%';
+    const btnAccept = document.createElement('button');
+    btnAccept.className = 'mini-btn blue';
+    btnAccept.textContent = '✓ Accepter';
+    btnAccept.addEventListener('click', ()=> resolveAppeal(doc.id, a.uid, 'accepted'));
+    const btnReject = document.createElement('button');
+    btnReject.className = 'mini-btn';
+    btnReject.textContent = 'Refuser';
+    btnReject.addEventListener('click', ()=> resolveAppeal(doc.id, a.uid, 'rejected'));
+    const btnBan = document.createElement('button');
+    btnBan.className = 'mini-btn danger';
+    btnBan.textContent = 'Refuser + bannir définitivement';
+    btnBan.addEventListener('click', ()=> resolveAppeal(doc.id, a.uid, 'banned'));
+    actions.appendChild(btnAccept); actions.appendChild(btnReject); actions.appendChild(btnBan);
+    wrap.appendChild(row); wrap.appendChild(actions);
+  });
+}
+
+async function resolveAppeal(appealId, uid, decision){
+  const userRef = db.collection('users').doc(uid);
+  const appealRef = db.collection('appeals').doc(appealId);
+  if(decision === 'accepted'){
+    await userRef.update({status:'active', suspendedUntil:null, permanent:false, appealStatus:null, suspensionReason:null});
+    await appealRef.update({status:'accepted'});
+    showToast('Compte réactivé, l\'utilisateur en est informé');
+  } else if(decision === 'rejected'){
+    await userRef.update({appealStatus:'rejected'});
+    await appealRef.update({status:'rejected'});
+    showToast('Demande refusée');
+  } else if(decision === 'banned'){
+    await userRef.update({status:'suspended', permanent:true, suspendedUntil:null, appealStatus:'banned', suspensionReason: 'Non-respect des règles (bannissement définitif)'});
+    await appealRef.update({status:'banned'});
+    showToast('Compte banni définitivement');
+  }
+  renderAdminAppealsList();
+  refreshAdminPendingBadge();
+}
 
 function renderAdminUserList(filter){
   const wrap = $('admin-user-list');
@@ -1652,65 +1966,85 @@ function renderAdminUserList(filter){
     .forEach(u=>{
       const row = document.createElement('div');
       row.className = 'admin-row';
-      const suspended = u.status === 'suspended';
+      const banned = u.status === 'suspended' && u.permanent === true;
+      const suspended = u.status === 'suspended' && !banned;
+      const pillClass = banned ? 'banned' : (suspended ? 'suspended' : 'active');
+      const pillText = banned ? 'Banni' : (suspended ? 'Suspendu' : 'Actif');
       row.innerHTML = `
         <button class="avatar" style="pointer-events:none;"></button>
         <div class="meta">
           <div class="name">${escapeHTML(u.name)}${u.role==='admin'?sealHTML():''}</div>
           <div class="sub">${escapeHTML(u.email||'')}</div>
-          ${u.appealStatus === 'pending' ? `<div class="appeal-note">📝 Demande d'examen : ${escapeHTML(u.appealMessage || '(sans message)')}</div>` : ''}
+          ${u.suspensionReason ? `<div class="appeal-note">Motif : ${escapeHTML(u.suspensionReason)}</div>` : ''}
         </div>
-        <span class="status-pill ${suspended?'suspended':'active'}">${suspended?'Suspendu':'Actif'}</span>
+        <span class="status-pill ${pillClass}">${pillText}</span>
       `;
       renderAvatar(row.querySelector('.avatar'), u);
       const actions = document.createElement('div');
       actions.style.width = '100%';
-      actions.style.marginTop = '6px';
-      if(suspended){
+
+      const btnMsg = document.createElement('button');
+      btnMsg.className = 'mini-btn blue';
+      btnMsg.textContent = '💬 Message';
+      btnMsg.addEventListener('click', ()=>{ closeModal('admin-modal'); startDirectChat(u.uid); });
+      actions.appendChild(btnMsg);
+
+      if(u.status === 'suspended'){
         const btn = document.createElement('button');
         btn.className = 'mini-btn';
         btn.textContent = 'Réactiver';
-        btn.addEventListener('click', ()=> setUserSuspension(u.uid, false, null));
+        btn.addEventListener('click', async ()=>{
+          await db.collection('users').doc(u.uid).update({status:'active', suspendedUntil:null, permanent:false, appealStatus:null, suspensionReason:null});
+          showToast('Compte réactivé');
+        });
         actions.appendChild(btn);
-        if(u.appealStatus === 'pending'){
-          const btnReject = document.createElement('button');
-          btnReject.className = 'mini-btn danger';
-          btnReject.textContent = 'Refuser la demande';
-          btnReject.addEventListener('click', ()=> rejectAppeal(u.uid));
-          actions.appendChild(btnReject);
-        }
       } else {
         const btn24 = document.createElement('button');
         btn24.className = 'mini-btn';
         btn24.textContent = 'Suspendre 24h';
-        btn24.addEventListener('click', ()=> setUserSuspension(u.uid, true, Timestamp.fromMillis(Date.now()+24*60*60*1000)));
+        btn24.addEventListener('click', ()=> openSuspendReasonModal(u.uid, false));
         const btnPerm = document.createElement('button');
         btnPerm.className = 'mini-btn danger';
-        btnPerm.textContent = 'Suspendre définitivement';
-        btnPerm.addEventListener('click', ()=> setUserSuspension(u.uid, true, null));
+        btnPerm.textContent = 'Bannir définitivement';
+        btnPerm.addEventListener('click', ()=> openSuspendReasonModal(u.uid, true));
         actions.appendChild(btn24); actions.appendChild(btnPerm);
       }
-      wrap.appendChild(row);
-      wrap.appendChild(actions);
+      wrap.appendChild(row); wrap.appendChild(actions);
     });
   if(wrap.innerHTML === '') wrap.innerHTML = '<div class="empty">Aucun utilisateur</div>';
 }
-async function setUserSuspension(uid, suspended, until){
-  const update = {
-    status: suspended ? 'suspended' : 'active',
-    suspendedUntil: until
-  };
-  if(!suspended){
-    update.appealStatus = null;
-    update.appealMessage = '';
-  }
-  await db.collection('users').doc(uid).update(update);
-  showToast(suspended ? 'Compte suspendu' : 'Compte réactivé');
+
+function openSuspendReasonModal(uid, permanent){
+  pendingSuspendUid = uid;
+  pendingSuspendPermanent = permanent;
+  $('suspend-reason-title').textContent = permanent ? 'Bannir définitivement ce compte' : 'Suspendre ce compte 24h';
+  openModal('suspend-reason-modal');
 }
-async function rejectAppeal(uid){
-  await db.collection('users').doc(uid).update({appealStatus:'rejected'});
-  showToast('Demande refusée');
-}
+$('confirm-suspend-btn').addEventListener('click', async ()=>{
+  if(!pendingSuspendUid) return;
+  const reason = $('suspend-reason-select').value;
+  const until = pendingSuspendPermanent ? null : Timestamp.fromMillis(Date.now()+24*60*60*1000);
+  await db.collection('users').doc(pendingSuspendUid).update({
+    status:'suspended', suspendedUntil: until, permanent: pendingSuspendPermanent,
+    suspensionReason: reason, appealStatus: null
+  });
+  showToast(pendingSuspendPermanent ? 'Compte banni définitivement' : 'Compte suspendu 24h');
+  closeModal('suspend-reason-modal');
+  pendingSuspendUid = null;
+});
+
+/* ---- Broadcast to all users ---- */
+$('open-broadcast-btn').addEventListener('click', ()=>{
+  $('broadcast-text-input').value = '';
+  openModal('broadcast-modal');
+});
+$('send-broadcast-btn').addEventListener('click', async ()=>{
+  const text = $('broadcast-text-input').value.trim();
+  if(!text){ showToast('Écris un message'); return; }
+  await db.collection('broadcasts').add({ text, from: currentUser.uid, createdAt: FieldValue.serverTimestamp() });
+  closeModal('broadcast-modal');
+  showToast('Message envoyé à tous les utilisateurs');
+});
 </script>
 </body>
 </html>
