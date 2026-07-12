@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <title>XMEN JUNNY CHAT - Premium Messaging</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --primary: #A01020; --primary-dark: #8B0000; --secondary: #D4A017;
+            --bg-dark: #1a0a0a; --bg-panel: #2d1515; --bg-card: #3d1f1f;
+            --text-primary: #FFF8F0; --text-secondary: #d4a88a; --border: #5a2a2a;
+            --font-scale: 1;
+        }
+        html, body { height: 100%; width: 100%; max-width: 100%; }
+        html { font-size: calc(16px * var(--font-scale)); }
+        body { background: #0d0505; color: var(--text-primary); overflow-x: hidden; font-size: 1rem; }
+        img { max-width: 100%; }
+
+        /* LOGIN */
+        .login-container { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a0a0a, #2d1515, #3d1f1f); padding: 20px; }
+        .login-box { background: rgba(61,31,31,0.9); backdrop-filter: blur(20px); border-radius: 26px; padding: 40px 28px; max-width: 440px; width: 100%; border: 2px solid rgba(212,160,23,0.4); animation: slideUp 0.8s; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        .logo-section { text-align: center; margin-bottom: 32px; }
+        .logo-icon { width: 110px; height: 110px; margin: 0 auto 20px; animation: bounce 2s infinite; }
+        .logo-icon img { width: 100%; height: 100%; object-fit: contain; }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .logo-section h1 { font-size: 1.9rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-section p { margin-top: 10px; color: var(--text-secondary); font-size: 0.9rem; }
+        .google-btn { width: 100%; padding: 16px; background: #fff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 14px; margin: 22px 0; color:#3c4043; transition: 0.2s; }
+        .google-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .google-btn img { width: 24px; }
+        .login-error { display:none; background: rgba(160,16,32,0.25); border: 1px solid var(--primary); color: #ffb3b3; padding: 12px 14px; border-radius: 10px; font-size: 0.82rem; margin-top: 10px; }
+        .login-loading { display:none; text-align:center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 10px; }
+        .terms-box { background: rgba(26,10,10,0.7); border-radius: 14px; padding: 20px; border-left: 4px solid var(--secondary); margin: 16px 0; max-height: 220px; overflow-y: auto; }
+        .terms-list { list-style: none; margin: 12px 0; }
+        .terms-list li { padding: 8px 0; padding-left: 28px; position: relative; color: var(--text-secondary); font-size: 0.88rem; }
+        .terms-list li::before { content: '✓'; position: absolute; left: 0; color: var(--secondary); font-weight: bold; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 12px; margin: 18px 0; padding: 15px; background: rgba(160,16,32,0.15); border-radius: 10px; cursor: pointer; }
+        .checkbox-wrapper input { width: 22px; height: 22px; accent-color: var(--primary); flex-shrink:0; }
+        .btn { padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size:0.95rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+        .btn-secondary { background: rgba(90,42,42,0.6); color: var(--text-primary); border: 2px solid var(--border); }
+
+        /* APP - single column, phone-first at any viewport width */
+        .app-container { display: none; width: 100%; height: 100vh; height: 100dvh; max-width: 560px; margin: 0 auto; position: relative; background: var(--bg-dark); box-shadow: 0 0 60px rgba(0,0,0,0.6); overflow: hidden; }
+        .sidebar { width: 100%; height: 100%; background: var(--bg-panel); display: flex; flex-direction: column; }
+        .main-content { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; flex-direction: column; background: var(--bg-dark); background-size: cover; background-position: center; z-index: 5; }
+        .app-container.chat-open .sidebar { display: none; }
+        .app-container.chat-open .main-content { display: flex; }
+
+        .sidebar-header { background: var(--bg-card); padding: 20px 22px; display: flex; justify-content: space-between; align-items: center; padding-top: max(20px, env(safe-area-inset-top)); gap:10px; }
+        .sidebar-header h2 { font-size:1.25rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+        .user-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; flex-shrink:0; font-weight:700; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-tabs { display: flex; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+        .nav-tab { flex: 1; padding: 14px 6px; text-align: center; cursor: pointer; color: var(--text-secondary); transition: 0.25s; font-size:0.78rem; }
+        .nav-tab i { display:block; font-size:1rem; margin-bottom:4px; }
+        .nav-tab.active { background: var(--primary); color: #fff; }
+        .nav-tab.premium { color: var(--secondary); }
+        .chat-list { flex: 1; overflow-y: auto; padding: 12px; }
+        .chat-item { display: flex; align-items: center; padding: 14px; border-radius: 16px; cursor: pointer; margin-bottom: 6px; transition: 0.25s; }
+        .chat-item:hover { background: var(--bg-card); }
+        .chat-item.active-chat { background: var(--bg-card); border: 1px solid var(--secondary); }
+        .chat-item.directory-item { opacity: 0.92; }
+        .chat-avatar { width: 52px; height: 52px; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: var(--bg-card); font-size:1.3rem; flex-shrink:0; }
+        .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .story-ring { border: 3px solid var(--secondary); padding: 2px; }
+        .story-ring-seen { border: 3px solid var(--border); padding: 2px; }
+        .chat-info { flex: 1; min-width:0; }
+        .chat-name { font-weight: 600; margin-bottom: 5px; font-size:0.95rem; display:flex; align-items:center; gap:5px; }
+        .chat-message { color: var(--text-secondary); font-size: 0.84rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .empty-list { text-align:center; padding:50px 20px; color:var(--text-secondary); }
+        .empty-list i { font-size:2.6rem; margin-bottom:14px; display:block; opacity:0.5; }
+        .section-label { padding: 10px 6px 6px; color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+        .verified-badge { color: var(--secondary); font-size: 0.78em; }
+
+        .main-header { background: var(--bg-card); padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; position:relative; padding-top: max(18px, env(safe-area-inset-top)); gap:10px; }
+        .main-header h3 { font-size:1.05rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+        .main-header .secured-note { font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .header-icons { display:flex; align-items:center; flex-shrink:0; }
+        .header-icons span { font-size: 1.2rem; margin-left: 14px; cursor: pointer; color: var(--text-secondary); transition:0.2s; }
+        .header-icons span:hover { color: var(--secondary); }
+        .back-btn { font-size:1.2rem; margin-right:16px; cursor:pointer; }
+        .content-area { flex: 1; overflow-y: auto; padding: 22px; }
+        .input-area { background: var(--bg-card); padding: 14px 16px; display: none; gap: 12px; align-items:center; padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+        .input-area input { flex: 1; padding: 14px 20px; border: none; border-radius: 25px; background: var(--bg-panel); color: var(--text-primary); font-size:1rem; }
+        .send-btn { width: 46px; height: 46px; border-radius: 50%; background: var(--primary); border: none; color: #fff; cursor: pointer; flex-shrink:0; font-size:1rem; }
+
+        .msg-bubble { padding:12px 16px; border-radius:18px; max-width:74%; margin:7px 0; word-wrap:break-word; }
+        .msg-bubble audio { max-width: 220px; height: 36px; }
+        .msg-sender { font-size:0.72rem; color: var(--secondary); margin-bottom:3px; font-weight:600; }
+        .msg-time { font-size:0.7rem; color:var(--text-secondary); margin-top:5px; text-align:right; }
+
+        /* DROPDOWN */
+        .dropdown-menu { position: absolute; top: 68px; right: 16px; background: var(--bg-card); border-radius: 15px; min-width: 240px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 1000; overflow:hidden; border:1px solid var(--border); }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { padding: 15px 18px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; transition:0.2s; font-size:0.9rem; }
+        .dropdown-item:last-child { border-bottom:none; }
+        .dropdown-item:hover { background: var(--bg-panel); }
+
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding:16px; }
+        .modal.show { display: flex; }
+        .modal-content { background: var(--bg-panel); border-radius: 22px; padding: 26px; max-width: 480px; width: 100%; max-height: 88vh; overflow-y: auto; }
+        .modal-content.wide { max-width: 640px; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 22px; align-items: center; }
+        .modal-header h3 { font-size: 1.05rem; }
+        .close-modal { font-size: 1.7rem; cursor: pointer; line-height:1; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size:0.88rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-size:1rem; font-family:inherit; }
+        .file-input { display: none; }
+        .file-label { display: block; padding: 14px; background: var(--bg-card); border: 2px dashed var(--border); border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s; font-size:0.88rem; }
+        .file-label:hover { border-color: var(--secondary); }
+
+        /* PREMIUM / BOUTIQUE */
+        .shop-tabs { display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+        .shop-tab-btn { padding:10px 16px; background:var(--bg-card); border:1px solid var(--border); border-radius:30px; cursor:pointer; color:var(--text-secondary); font-weight:600; font-size:0.82rem; transition:0.2s; }
+        .shop-tab-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .shop-section { display:none; }
+        .shop-section.active { display:block; }
+        .shop-banner { border-radius:14px; overflow:hidden; margin-bottom:20px; position:relative; height:100px; }
+        .shop-banner img { width:100%; height:100%; object-fit:cover; opacity:0.55; }
+        .shop-banner-text { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 20px; background:linear-gradient(90deg, rgba(26,10,10,0.9), transparent); }
+        .shop-banner-text h4 { font-size:1.1rem; color:var(--secondary); }
+        .pricing-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+        .pricing-card { background: var(--bg-card); border: 2px solid var(--border); border-radius: 18px; padding: 24px; text-align: center; position: relative; }
+        .pricing-card.featured { border-color: var(--secondary); }
+        .badge-popular { position: absolute; top: 13px; right: -32px; background: var(--secondary); color: var(--bg-dark); padding: 4px 36px; transform: rotate(45deg); font-weight: bold; font-size: 0.72rem; }
+        .plan-price { font-size: 1.9rem; color: var(--secondary); margin: 10px 0; font-weight: 800; }
+        .revenue-info { background: rgba(212,160,23,0.1); padding: 12px; border-radius: 10px; margin: 12px 0; border-left: 3px solid var(--secondary); text-align:left; font-size:0.84rem; }
+        .revenue-info strong { color: var(--secondary); display: block; margin-bottom: 4px; }
+        .pay-btn { width: 100%; padding: 14px; background: var(--secondary); border: none; border-radius: 10px; color: var(--bg-dark); font-weight: 700; cursor: pointer; margin-top: 12px; font-size:0.9rem; }
+        .agent-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid #25D366; color: #25D366; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 8px; font-size:0.82rem; }
+        .agent-email-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--secondary); color: var(--secondary); border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 8px; font-size:0.82rem; }
+        .no-wave-note { font-size:0.72rem; color:var(--text-secondary); margin-top:10px; }
+        .feature-list { list-style: none; text-align: left; margin: 14px 0; color: var(--text-secondary); font-size:0.84rem; }
+        .feature-list li { padding:4px 0; }
+        .feature-list i { color:var(--secondary); margin-right:8px; width:14px; }
+
+        .ebook-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+        .ebook-cover { height:130px; overflow:hidden; }
+        .ebook-cover img { width:100%; height:100%; object-fit:cover; }
+        .ebook-body { padding:16px; }
+        .ebook-body h4 { font-size:0.95rem; margin-bottom:6px; }
+        .ebook-body p { color:var(--text-secondary); font-size:0.8rem; margin-bottom:10px; }
+        .ebook-price { color:var(--secondary); font-weight:700; font-size:1.1rem; margin-bottom:8px; }
+
+        /* HELP */
+        .help-logo { width: 100px; height: 100px; margin: 0 auto 18px; border-radius: 50%; overflow: hidden; border: 4px solid var(--secondary); }
+        .help-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .help-topic { background: var(--bg-card); padding: 16px; margin: 8px 0; border-radius: 12px; cursor: pointer; font-size:0.9rem; }
+        .contact-btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; padding: 14px; border-radius: 30px; border: none; cursor: pointer; font-weight: 600; margin-top: 16px; }
+
+        /* GROUP */
+        .member-list { max-height: 260px; overflow-y: auto; margin: 14px 0; }
+        .member-item { display: flex; align-items: center; padding: 11px; margin: 5px 0; background: var(--bg-card); border-radius: 10px; cursor: pointer; }
+        .member-item input { margin-right: 12px; }
+        .copy-link-btn { background: transparent; color: var(--secondary); border: 1px solid var(--secondary); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 8px; font-size:0.8rem; }
+        .add-member-btn { background: transparent; color: var(--secondary); border: 1px dashed var(--secondary); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 8px; font-size:0.8rem; margin-left: 8px; }
+
+        /* PROFILE / SETTINGS */
+        .settings-block { background: var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; text-align:left; }
+        .settings-block h4 { color:var(--secondary); margin-bottom:14px; font-size:0.92rem; }
+        .segmented { display:flex; gap:8px; }
+        .segmented button { flex:1; padding:11px; border-radius:10px; border:1px solid var(--border); background:var(--bg-panel); color:var(--text-secondary); cursor:pointer; font-weight:600; font-size:0.85rem; }
+        .segmented button.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .wallpaper-preview { width:100%; height:90px; border-radius:10px; background-size:cover; background-position:center; background-color:var(--bg-panel); margin-top:10px; border:1px solid var(--border); }
+
+        /* USERS ADMIN PANEL */
+        .user-row { display:flex; align-items:center; gap:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px; flex-wrap:wrap; }
+        .user-row .u-info { flex:1; min-width:140px; }
+        .u-status { font-size:0.72rem; padding:3px 9px; border-radius:20px; font-weight:600; }
+        .u-status.active { background:rgba(46,160,67,0.2); color:#4ade80; }
+        .u-status.suspended { background:rgba(212,160,23,0.2); color:var(--secondary); }
+        .u-status.banned { background:rgba(160,16,32,0.25); color:#ff6b6b; }
+        .u-actions { display:flex; gap:6px; flex-wrap:wrap; }
+        .u-actions button { padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-panel); color:var(--text-primary); cursor:pointer; font-size:0.74rem; }
+        .broadcast-box { background:var(--bg-card); border:1px solid var(--secondary); border-radius:14px; padding:18px; margin-bottom:20px; }
+        .broadcast-box textarea { width:100%; padding:11px; border-radius:10px; border:1px solid var(--border); background:var(--bg-panel); color:var(--text-primary); font-family:inherit; resize:vertical; min-height:64px; margin-bottom:10px; }
+
+        /* ADD STATUS MENU */
+        .add-status-options { display:flex; gap:12px; margin-top: 6px; }
+        .add-status-opt { flex:1; background: var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px 8px; text-align:center; cursor:pointer; }
+        .add-status-opt i { font-size:1.4rem; color: var(--secondary); display:block; margin-bottom:8px; }
+        .add-status-opt span { font-size:0.78rem; color: var(--text-secondary); }
+        .text-status-preview { border-radius:16px; padding:40px 20px; text-align:center; color:#fff; font-size:1.3rem; font-weight:600; min-height:160px; display:flex; align-items:center; justify-content:center; }
+        .status-color-row { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+        .status-color-swatch { width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+        .status-color-swatch.selected { border-color:#fff; }
+
+        /* STORY VIEWER */
+        .story-viewer { display:none; position:fixed; inset:0; background:#000; z-index:3000; flex-direction:column; }
+        .story-viewer.show { display:flex; }
+        .story-progress-row { display:flex; gap:4px; padding:10px 10px 0; padding-top: max(10px, env(safe-area-inset-top)); }
+        .story-progress-track { flex:1; height:3px; background:rgba(255,255,255,0.3); border-radius:2px; overflow:hidden; }
+        .story-progress-fill { height:100%; width:0%; background:#fff; }
+        .story-header { display:flex; align-items:center; gap:10px; padding:12px 14px; color:#fff; }
+        .story-header .chat-avatar { width:36px; height:36px; margin:0; }
+        .story-body { flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+        .story-body img, .story-body video { max-width:100%; max-height:100%; object-fit:contain; }
+        .story-text-slide { color:#fff; font-size:1.4rem; text-align:center; padding:40px; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+        .story-tap-zone { position:absolute; top:0; bottom:0; width:35%; z-index:2; }
+        .story-close { position:absolute; top:max(14px, env(safe-area-inset-top)); right:16px; color:#fff; font-size:1.5rem; cursor:pointer; z-index:10; }
+        .story-uploading { color:#fff; text-align:center; padding: 30px; }
+
+        /* TRIM MODAL */
+        .trim-video-wrap video { width:100%; border-radius:12px; background:#000; }
+        .trim-range { width:100%; margin-top:14px; }
+        .trim-info { color:var(--text-secondary); font-size:0.85rem; margin-top:8px; text-align:center; }
+
+        .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .upload-progress { font-size:0.78rem; color: var(--text-secondary); text-align:center; margin-top:8px; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <img src="https://files.catbox.moe/hlekxk.png" alt="XMEN JUNNY CHAT" id="mainLogo">
+                </div>
+                <h1>XMEN JUNNY CHAT</h1>
+                <p>Discussions, statuts et chaines - connecte-toi avec Google</p>
+            </div>
+            <div class="terms-box">
+                <h3><i class="fas fa-shield-alt"></i> Conditions d'utilisation</h3>
+                <ul class="terms-list">
+                    <li>Respecter les autres membres</li>
+                    <li>Pas de spam ni contenu illegal</li>
+                    <li>Ne pas usurper d'identite</li>
+                    <li>Accepter la suspension en cas de non-respect</li>
+                    <li>Messages stockes pour le service</li>
+                </ul>
+            </div>
+            <div class="checkbox-wrapper" onclick="document.getElementById('termsCheck').click()">
+                <input type="checkbox" id="termsCheck" onchange="updateGoogleButton()">
+                <label>J'ai lu et j'accepte les conditions</label>
+            </div>
+            <button class="google-btn" id="googleBtn" onclick="loginWithGoogle()" disabled>
+                <img src="https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png">
+                Continuer avec Google
+            </button>
+            <div class="login-loading" id="loginLoading"><span class="spinner"></span> Connexion en cours...</div>
+            <div class="login-error" id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div class="app-container" id="appContainer">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>XMEN JUNNY CHAT</h2>
+                <div class="user-avatar" onclick="toggleDropdown()" id="userAvatarDisplay">👤</div>
+            </div>
+            <div class="nav-tabs">
+                <div class="nav-tab active" data-tab="discussions" onclick="switchTab('discussions')"><i class="fas fa-comments"></i>Discussions</div>
+                <div class="nav-tab" data-tab="statuts" onclick="switchTab('statuts')"><i class="fas fa-circle-notch"></i>Statuts</div>
+                <div class="nav-tab" data-tab="groupes" onclick="switchTab('groupes')"><i class="fas fa-users"></i>Groupes</div>
+                <div class="nav-tab premium" onclick="showPremium()"><i class="fas fa-crown"></i>Premium</div>
+            </div>
+            <div class="chat-list" id="chatList"></div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="main-header">
+                <div style="display:flex;align-items:center;min-width:0;flex:1;overflow:hidden;">
+                    <span class="back-btn" onclick="closeChatMobile()"><i class="fas fa-arrow-left"></i></span>
+                    <div style="min-width:0;flex:1;overflow:hidden;">
+                        <h3 id="chatTitle">Discussions</h3>
+                        <div class="secured-note" id="securedNote" style="display:none;"><i class="fas fa-lock"></i> Compte officiel verifie et securise</div>
+                    </div>
+                </div>
+                <div class="header-icons">
+                    <span onclick="openAddMembers()" id="groupAddIcon" style="display:none;" title="Ajouter des membres"><i class="fas fa-user-plus"></i></span>
+                    <span onclick="createNewGroup()" title="Nouveau groupe"><i class="fas fa-plus"></i></span>
+                    <span onclick="openHelp()" title="Aide"><i class="fas fa-question-circle"></i></span>
+                    <span onclick="toggleDropdown()" title="Menu"><i class="fas fa-ellipsis-v"></i></span>
+                </div>
+            </div>
+            <div class="content-area" id="contentArea"></div>
+            <div class="input-area" id="inputArea">
+                <input type="text" placeholder="Message" id="messageInput" onkeydown="if(event.key==='Enter')sendMessage()">
+                <button class="send-btn" id="voiceBtn" style="background:var(--bg-panel);" onclick="toggleVoiceRecording()"><i class="fas fa-microphone" id="voiceBtnIcon"></i></button>
+                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="input-area" id="recordingBar" style="display:none;background:var(--bg-card);">
+                <span style="color:#ff6b6b;"><i class="fas fa-circle" style="font-size:0.6rem;"></i></span>
+                <span id="recordingTimer" style="flex:1;color:var(--text-primary);">0:00</span>
+                <button class="send-btn" style="background:var(--bg-panel);" onclick="cancelVoiceRecording()"><i class="fas fa-trash"></i></button>
+                <button class="send-btn" onclick="stopVoiceRecording()"><i class="fas fa-check"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DROPDOWN -->
+    <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dropdown-item premium" onclick="showPremium()"><i class="fas fa-bullhorn"></i> Promouvoir / Boutique</div>
+        <div class="dropdown-item" onclick="createNewGroup()"><i class="fas fa-users"></i> Nouveau groupe</div>
+        <div class="dropdown-item" onclick="openProfile()"><i class="fas fa-user-circle"></i> Profil</div>
+        <div class="dropdown-item" id="dropdownUsersItem" style="display:none;" onclick="openUsersPanel()"><i class="fas fa-user-shield"></i> Utilisateurs</div>
+        <div class="dropdown-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Se deconnecter</div>
+    </div>
+
+    <!-- CREATE GROUP MODAL -->
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-users"></i> Creer un groupe</h3>
+                <span class="close-modal" onclick="closeModal('createGroupModal')">&times;</span>
+            </div>
+            <div class="form-group">
+                <label>Nom du groupe</label>
+                <input type="text" id="groupName" placeholder="Ex: Mon Super Groupe">
+            </div>
+            <div class="form-group">
+                <label>Photo de profil</label>
+                <label class="file-label" onclick="document.getElementById('groupPhoto').click()">
+                    <i class="fas fa-camera"></i> Cliquer pour importer une photo
+                    <input type="file" id="groupPhoto" class="file-input" accept="image/*" onchange="previewGroupPhoto(this)">
+                </label>
+                <div id="groupPhotoPreview" style="margin-top:10px;display:none;">
+                    <img id="previewImg" style="width:90px;height:90px;border-radius:50%;object-fit:cover;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Membres (parmi les utilisateurs inscrits sur le site)</label>
+                <div class="member-list" id="memberList"></div>
+            </div>
+            <button class="btn btn-primary" onclick="createGroup()" style="width:100%;" id="createGroupBtn">
+                <i class="fas fa-check"></i> Creer le groupe
+            </button>
+        </div>
+    </div>
+
+    <!-- ADD MEMBERS MODAL -->
+    <div class="modal" id="addMembersModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Ajouter des membres</h3>
+                <span class="close-modal" onclick="closeModal('addMembersModal')">&times;</span>
+            </div>
+            <div class="member-list" id="addMemberList"></div>
+            <button class="btn btn-primary" onclick="confirmAddMembers()" style="width:100%;">Ajouter au groupe</button>
+        </div>
+    </div>
+
+    <!-- PREMIUM / BOUTIQUE MODAL -->
+    <div class="modal" id="premiumModal">
+        <div class="modal-content wide">
+            <div class="modal-header">
+                <h3><i class="fas fa-crown"></i> Boutique Premium</h3>
+                <span class="close-modal" onclick="closeModal('premiumModal')">&times;</span>
+            </div>
+
+            <div class="shop-tabs">
+                <div class="shop-tab-btn active" data-shop="abonnements" onclick="switchShopTab('abonnements')">Abonnements</div>
+                <div class="shop-tab-btn" data-shop="vpn" onclick="switchShopTab('vpn')">VPN</div>
+                <div class="shop-tab-btn" data-shop="ebooks" onclick="switchShopTab('ebooks')">Ebooks & Formations</div>
+            </div>
+
+            <div class="shop-section active" id="shop-abonnements">
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h4>Starter</h4>
+                        <div class="plan-price">3 000 FCFA</div>
+                        <p style="color:var(--text-secondary);">1 semaine</p>
+                        <div class="revenue-info">
+                            <strong>Catalogues</strong> 3 catalogues/jour
+                            <strong style="margin-top:8px;">Revenus estimes</strong> 5-10 $ / semaine
+                        </div>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Badge Premium</li>
+                            <li><i class="fas fa-check"></i>Support prioritaire</li>
+                            <li><i class="fas fa-check"></i>Visibilite basique</li>
+                        </ul>
+                        <button class="pay-btn" onclick="payWithWave(3000,'Abonnement Starter')"><i class="fas fa-credit-card"></i> Payer avec Wave</button>
+                        <button class="agent-btn" onclick="contactAgent('Abonnement Starter',3000)"><i class="fab fa-whatsapp"></i> Contacter le service de paiement (WhatsApp)</button>
+                        <button class="agent-email-btn" onclick="contactAgentEmail('Abonnement Starter',3000)"><i class="fas fa-envelope"></i> Par e-mail</button>
+                        <p class="no-wave-note">Hors zone Wave ? Utilise un des boutons ci-dessus, un agent finalise ton paiement.</p>
+                    </div>
+
+                    <div class="pricing-card featured">
+                        <div class="badge-popular">POPULAIRE</div>
+                        <h4>Pro</h4>
+                        <div class="plan-price">6 000 FCFA</div>
+                        <p style="color:var(--text-secondary);">2 semaines</p>
+                        <div class="revenue-info">
+                            <strong>Catalogues</strong> 5-6 catalogues/jour
+                            <strong style="margin-top:8px;">Revenus estimes</strong> 10-25 $ / semaine
+                        </div>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Badge Premium</li>
+                            <li><i class="fas fa-check"></i>Compte WhatsApp Premium</li>
+                            <li><i class="fas fa-check"></i>PDF Creation de contenu pro</li>
+                            <li><i class="fas fa-check"></i>Visibilite accrue + support 24/7</li>
+                        </ul>
+                        <button class="pay-btn" onclick="payWithWave(6000,'Abonnement Pro')"><i class="fas fa-credit-card"></i> Payer avec Wave</button>
+                        <button class="agent-btn" onclick="contactAgent('Abonnement Pro',6000)"><i class="fab fa-whatsapp"></i> Contacter le service de paiement (WhatsApp)</button>
+                        <button class="agent-email-btn" onclick="contactAgentEmail('Abonnement Pro',6000)"><i class="fas fa-envelope"></i> Par e-mail</button>
+                        <p class="no-wave-note">Hors zone Wave ? Utilise un des boutons ci-dessus, un agent finalise ton paiement.</p>
+                    </div>
+
+                    <div class="pricing-card">
+                        <h4>Premium</h4>
+                        <div class="plan-price">10 000 FCFA</div>
+                        <p style="color:var(--text-secondary);">1 mois</p>
+                        <div class="revenue-info">
+                            <strong>Catalogues</strong> 10 catalogues/jour
+                            <strong style="margin-top:8px;">Revenus estimes</strong> 15-30 $ / semaine
+                        </div>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Badge Premium + Top visibilite</li>
+                            <li><i class="fas fa-check"></i>PDF Creation de site web</li>
+                            <li><i class="fas fa-check"></i>Pack de 900 formations</li>
+                            <li><i class="fas fa-check"></i>Bot WhatsApp officiel</li>
+                            <li><i class="fas fa-check"></i>Support VIP + statistiques avancees</li>
+                        </ul>
+                        <button class="pay-btn" onclick="payWithWave(10000,'Abonnement Premium')"><i class="fas fa-credit-card"></i> Payer avec Wave</button>
+                        <button class="agent-btn" onclick="contactAgent('Abonnement Premium',10000)"><i class="fab fa-whatsapp"></i> Contacter le service de paiement (WhatsApp)</button>
+                        <button class="agent-email-btn" onclick="contactAgentEmail('Abonnement Premium',10000)"><i class="fas fa-envelope"></i> Par e-mail</button>
+                        <p class="no-wave-note">Hors zone Wave ? Utilise un des boutons ci-dessus, un agent finalise ton paiement.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shop-section" id="shop-vpn">
+                <div class="shop-banner">
+                    <img src="https://images.unsplash.com/photo-1614064548237-096d8dcf37f3?w=900&q=60" alt="VPN">
+                    <div class="shop-banner-text"><h4>VPN illimite - tous pays</h4><p style="color:var(--text-secondary);font-size:0.8rem;">Congo, Senegal, Cote d'Ivoire, France, USA et plus</p></div>
+                </div>
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h4><i class="fas fa-shield-alt"></i> VPN Basique</h4>
+                        <div class="plan-price">2 000 FCFA</div>
+                        <p style="color:var(--text-secondary);">1 semaine</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>1 pays au choix</li>
+                            <li><i class="fas fa-check"></i>Vitesse standard</li>
+                            <li><i class="fas fa-check"></i>Support par chat</li>
+                        </ul>
+                        <button class="pay-btn" onclick="payWithWave(2000,'VPN Basique')"><i class="fas fa-credit-card"></i> Payer avec Wave</button>
+                        <button class="agent-btn" onclick="contactAgent('VPN Basique',2000)"><i class="fab fa-whatsapp"></i> Contacter le service de paiement (WhatsApp)</button>
+                        <button class="agent-email-btn" onclick="contactAgentEmail('VPN Basique',2000)"><i class="fas fa-envelope"></i> Par e-mail</button>
+                        <p class="no-wave-note">Hors zone Wave ? Utilise un des boutons ci-dessus, un agent finalise ton paiement.</p>
+                    </div>
+                    <div class="pricing-card featured">
+                        <div class="badge-popular">TOP</div>
+                        <h4><i class="fas fa-globe"></i> VPN Multi-pays</h4>
+                        <div class="plan-price">3 500 FCFA</div>
+                        <p style="color:var(--text-secondary);">1 mois</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Congo + tous les reseaux</li>
+                            <li><i class="fas fa-check"></i>Serveurs illimites</li>
+                            <li><i class="fas fa-check"></i>Changement de pays illimite</li>
+                        </ul>
+                        <button class="pay-btn" onclick="payWithWave(3500,'VPN Multi-pays')"><i class="fas fa-credit-card"></i> Payer avec Wave</button>
+                        <button class="agent-btn" onclick="contactAgent('VPN Multi-pays',3500)"><i class="fab fa-whatsapp"></i> Contacter le service de paiement (WhatsApp)</button>
+                        <button class="agent-email-btn" onclick="contactAgentEmail('VPN Multi-pays',3500)"><i class="fas fa-envelope"></i> Par e-mail</button>
+                        <p class="no-wave-note">Hors zone Wave ? Utilise un des boutons ci-dessus, un agent finalise ton paiement.</p>
+                    </div>
+                    <div class="pricing-card">
+                        <h4><i class="fas fa-bolt"></i> VPN Illimite Pro</h4>
+                        <div class="plan-price">5 000 FCFA</div>
+                        <p style="color:var(--text-secondary);">1 mois</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Bande passante illimitee</li>
+                            <li><i class="fas fa-check"></i>Tous pays + serveurs illimites</li>
+                            <li><i class="fas fa-check"></i>Support prioritaire 24/7</li>
+                        </ul>
+                        <button class="pay-btn" onclick="payWithWave(5000,'VPN Illimite Pro')"><i class="fas fa-credit-card"></i> Payer avec Wave</button>
+                        <button class="agent-btn" onclick="contactAgent('VPN Illimite Pro',5000)"><i class="fab fa-whatsapp"></i> Contacter le service de paiement (WhatsApp)</button>
+                        <button class="agent-email-btn" onclick="contactAgentEmail('VPN Illimite Pro',5000)"><i class="fas fa-envelope"></i> Par e-mail</button>
+                        <p class="no-wave-note">Hors zone Wave ? Utilise un des boutons ci-dessus, un agent finalise ton paiement.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shop-section" id="shop-ebooks">
+                <div class="shop-banner">
+                    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=900&q=60" alt="Ebooks">
+                    <div class="shop-banner-text"><h4>Ebooks & formations</h4><p style="color:var(--text-secondary);font-size:0.8rem;">Apprends et lance ton business a ton rythme</p></div>
+                </div>
+                <div class="pricing-grid" id="ebookGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-circle"></i> Profil</h3>
+                <span class="close-modal" onclick="closeModal('profileModal')">&times;</span>
+            </div>
+            <div id="profileContent"></div>
+        </div>
+    </div>
+
+    <!-- USERS ADMIN MODAL -->
+    <div class="modal" id="usersModal">
+        <div class="modal-content wide">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-shield"></i> Gestion des utilisateurs</h3>
+                <span class="close-modal" onclick="closeModal('usersModal')">&times;</span>
+            </div>
+            <div class="broadcast-box">
+                <label style="display:block;margin-bottom:10px;color:var(--secondary);font-weight:600;"><i class="fas fa-bullhorn"></i> Envoyer un message a tous les utilisateurs</label>
+                <textarea id="broadcastText" placeholder="Ecris ton message..."></textarea>
+                <button class="btn btn-primary" style="width:100%;" onclick="sendBroadcast()"><i class="fas fa-paper-plane"></i> Envoyer a tous</button>
+            </div>
+            <div id="usersList"></div>
+        </div>
+    </div>
+
+    <!-- HELP MODAL -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-question-circle"></i> Pages d'aide</h3>
+                <span class="close-modal" onclick="closeModal('helpModal')">&times;</span>
+            </div>
+            <div class="help-logo">
+                <img src="https://files.catbox.moe/zkdsun.png" alt="Assistante" id="helpAvatar">
+            </div>
+            <h2 style="text-align:center;margin-bottom:24px;font-size:1.2rem;">Comment pouvons-nous vous aider ?</h2>
+            <div class="help-topic"><i class="fas fa-rocket" style="margin-right:10px;"></i> Demarrer</div>
+            <div class="help-topic"><i class="fas fa-comments" style="margin-right:10px;"></i> Discussions</div>
+            <div class="help-topic"><i class="fas fa-building" style="margin-right:10px;"></i> Entreprises</div>
+            <div class="help-topic"><i class="fas fa-phone" style="margin-right:10px;"></i> Appels</div>
+            <div class="help-topic"><i class="fas fa-users" style="margin-right:10px;"></i> Communautes</div>
+            <div class="help-topic"><i class="fas fa-lock" style="margin-right:10px;"></i> Securite</div>
+            <button class="contact-btn" onclick="contactSupport()">
+                <i class="fas fa-comment-dots"></i> Nous contacter
+            </button>
+        </div>
+    </div>
+
+    <!-- ADD STATUS MODAL -->
+    <div class="modal" id="addStatusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-circle-notch"></i> Ajouter un statut</h3>
+                <span class="close-modal" onclick="closeModal('addStatusModal')">&times;</span>
+            </div>
+            <div class="add-status-options">
+                <div class="add-status-opt" onclick="closeModal('addStatusModal');openTextStatusModal();">
+                    <i class="fas fa-font"></i><span>Texte</span>
+                </div>
+                <div class="add-status-opt" onclick="document.getElementById('statusPhotoInput').click()">
+                    <i class="fas fa-image"></i><span>Photo</span>
+                </div>
+                <div class="add-status-opt" onclick="document.getElementById('statusVideoInput').click()">
+                    <i class="fas fa-video"></i><span>Video (max 30s)</span>
+                </div>
+            </div>
+            <input type="file" id="statusPhotoInput" class="file-input" accept="image/*" onchange="handleStatusPhoto(this)">
+            <input type="file" id="statusVideoInput" class="file-input" accept="video/*" onchange="handleStatusVideo(this)">
+        </div>
+    </div>
+
+    <!-- TEXT STATUS MODAL -->
+    <div class="modal" id="textStatusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-font"></i> Statut texte</h3>
+                <span class="close-modal" onclick="closeModal('textStatusModal')">&times;</span>
+            </div>
+            <div class="text-status-preview" id="textStatusPreview" style="background:#A01020;">Ecris ton statut...</div>
+            <div class="form-group" style="margin-top:16px;">
+                <textarea id="textStatusInput" rows="3" placeholder="Ton statut..." oninput="updateTextStatusPreview()"></textarea>
+            </div>
+            <div class="status-color-row" id="statusColorRow"></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="postTextStatus()">Publier</button>
+        </div>
+    </div>
+
+    <!-- VIDEO TRIM MODAL -->
+    <div class="modal" id="trimModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cut"></i> Decouper la video</h3>
+                <span class="close-modal" onclick="closeModal('trimModal')">&times;</span>
+            </div>
+            <div class="trim-video-wrap">
+                <video id="trimVideoPreview" muted playsinline></video>
+            </div>
+            <input type="range" class="trim-range" id="trimRange" min="0" max="0" step="0.1" oninput="onTrimRangeChange()">
+            <div class="trim-info" id="trimInfo"></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="confirmTrim()" id="confirmTrimBtn">Utiliser ce segment</button>
+        </div>
+    </div>
+
+    <!-- STORY VIEWER -->
+    <div class="story-viewer" id="storyViewer">
+        <span class="story-close" onclick="closeStoryViewer()">&times;</span>
+        <div class="story-progress-row" id="storyProgressRow"></div>
+        <div class="story-header">
+            <div class="chat-avatar" id="storyAvatar"></div>
+            <div>
+                <div style="font-weight:600;font-size:0.9rem;" id="storyName"></div>
+                <div style="font-size:0.75rem;color:#ccc;" id="storyTime"></div>
+            </div>
+        </div>
+        <div class="story-body" id="storyBody">
+            <div class="story-tap-zone" style="left:0;" onclick="prevStory()"></div>
+            <div class="story-tap-zone" style="right:0;" onclick="nextStory()"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import {
+            getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult,
+            onAuthStateChanged, signOut
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import {
+            getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection,
+            addDoc, query, where, orderBy, serverTimestamp, Timestamp, limit
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import {
+            getStorage, ref, uploadBytes, uploadString, getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBzH-n82Ieh_vcn8AK-rIDPpqtMjJeeXgw",
+            authDomain: "vibe-app-a81d4.firebaseapp.com",
+            projectId: "vibe-app-a81d4",
+            storageBucket: "vibe-app-a81d4.firebasestorage.app",
+            messagingSenderId: "973098397469",
+            appId: "1:973098397469:web:4b0f2ab4b0f50b22c53bf4",
+            measurementId: "G-XGDDKP1XQF"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = getFirestore(firebaseApp);
+        const storage = getStorage(firebaseApp);
+
+        const ADMIN_EMAIL = 'boydevisprimee@gmail.com';
+        const SITE_NAME = 'XMEN JUNNY CHAT';
+        const AGENT_WHATSAPP = '2250160775890';
+        const AGENT_EMAIL = 'infoworldpulse1@gmail.com';
+        const MAX_STATUS_VIDEO_SECONDS = 30;
+        const STATUS_LIFETIME_MS = 24 * 60 * 60 * 1000;
+        const STATUS_COLORS = ['#A01020', '#8B0000', '#D4A017', '#1a5276', '#145a32', '#6c3483'];
+
+        let currentUser = null;      // {uid,email,name,avatar,isAdmin,status}
+        let currentChat = null;      // normalized chat object being viewed
+        let usersCache = [];         // all users from Firestore (realtime)
+        let groupsCache = [];        // groups the user belongs to
+        let directChatsCache = {};   // chatId -> {messages:[...], otherUser}
+        let statusesCache = [];      // active (non-expired) statuses
+        let adminUidCache = null;
+        let broadcastsCache = [];
+        let currentTab = 'discussions';
+        let msgUnsubs = {};          // chatId -> unsubscribe fn for message listeners
+        let groupMsgUnsubs = {};
+        let pendingTrimFile = null;
+        let pendingTrimDuration = 0;
+        let pendingTrimStart = 0;
+        let pendingStatusKind = null; // 'image' | 'video'
+        let storyQueue = [];
+        let storyIndex = 0;
+        let storyTimer = null;
+        let selectedTextColor = STATUS_COLORS[0];
+        let selectedMembers = [];
+        let addMemberSelection = [];
+        let groupPhotoFile = null;
+        let groupPhotoPreviewUrl = null;
+
+        const EBOOKS = [
+            {title:'Guide Marketing Digital', desc:'Vends et fais-toi connaitre en ligne.', price:1500, img:'https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=400&q=60'},
+            {title:'Creer son business en ligne', desc:'De zero a ta premiere vente.', price:2000, img:'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=400&q=60'},
+            {title:'Maitriser WhatsApp Business', desc:'Automatise et vends via WhatsApp.', price:1500, img:'https://images.unsplash.com/photo-1611606063065-ee7946f0787a?w=400&q=60'},
+            {title:'Business Freelance International', desc:'Trouve des clients payes en devises.', price:2000, img:'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&q=60'},
+            {title:'Pack Formations (900 cours)', desc:'Business, tech, marketing, design...', price:10000, img:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&q=60'},
+            {title:'Creation de site web (PDF)', desc:'Guide pas a pas, sans coder.', price:1000, img:'https://images.unsplash.com/photo-1547658719-da2b51169166?w=400&q=60'}
+        ];
+
+        function verifiedBadge(isAdmin) {
+            return isAdmin ? ' <i class="fas fa-circle-check verified-badge" title="Compte officiel verifie"></i>' : '';
+        }
+        function avatarInner(url, fallback) {
+            return url ? ('<img src="' + url + '" alt="">') : (fallback || '<i class="fas fa-user"></i>');
+        }
+        function directChatId(uidA, uidB) { return [uidA, uidB].sort().join('_'); }
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+            });
+        }
+
+        /* ---------------- AUTH ---------------- */
+        function updateGoogleButton() {
+            document.getElementById('googleBtn').disabled = !document.getElementById('termsCheck').checked;
+        }
+        window.updateGoogleButton = updateGoogleButton;
+
+        function showLoginError(msg) {
+            const el = document.getElementById('loginError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        // FIX: sur mobile (Chrome Android notamment), le popup Google est presque toujours bloque
+        // silencieusement (rien ne se passe au clic). On utilise donc directement le redirect,
+        // qui est la methode fiable sur mobile.
+        async function loginWithGoogle() {
+            if (document.getElementById('googleBtn').disabled) return;
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('loginLoading').style.display = 'block';
+            document.getElementById('googleBtn').disabled = true;
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithRedirect(auth, provider);
+                // La page va se recharger vers Google puis revenir ici automatiquement.
+            } catch (err) {
+                document.getElementById('loginLoading').style.display = 'none';
+                document.getElementById('googleBtn').disabled = false;
+                showLoginError('Connexion impossible : ' + (err.message || 'erreur inconnue') + (err.code ? ' (code: ' + err.code + ')' : '') + '. Verifie que "junny.onrender.com" est bien dans Firebase Authentication > Parametres > Domaines autorises.');
+                console.error(err);
+            }
+        }
+        window.loginWithGoogle = loginWithGoogle;
+
+        function logout() {
+            signOut(auth);
+        }
+        window.logout = logout;
+
+        onAuthStateChanged(auth, async (fbUser) => {
+            if (fbUser) {
+                await ensureUserDoc(fbUser);
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                initApp();
+            } else {
+                document.getElementById('loginLoading').style.display = 'none';
+                document.getElementById('googleBtn').disabled = !document.getElementById('termsCheck').checked;
+                document.getElementById('appContainer').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+            }
+        });
+
+        // Handle redirect-based sign-in result (mobile). On affiche l'erreur exacte si ca echoue,
+        // au lieu de rester bloque sans rien afficher.
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                console.log('Connexion Google reussie :', result.user.email);
+            }
+        }).catch((err) => {
+            document.getElementById('loginLoading').style.display = 'none';
+            document.getElementById('googleBtn').disabled = !document.getElementById('termsCheck').checked;
+            if (err && err.message) {
+                showLoginError('Connexion impossible : ' + err.message + (err.code ? ' (code: ' + err.code + ')' : '') + '. Verifie que "junny.onrender.com" est bien dans Firebase Authentication > Parametres > Domaines autorises.');
+            }
+            console.error(err);
+        });
+
+        async function ensureUserDoc(fbUser) {
+            const isAdmin = (fbUser.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+            const ref_ = doc(db, 'users', fbUser.uid);
+            const snap = await getDoc(ref_);
+            if (!snap.exists()) {
+                await setDoc(ref_, {
+                    email: fbUser.email || '',
+                    name: fbUser.displayName || (fbUser.email ? fbUser.email.split('@')[0] : 'Utilisateur'),
+                    avatar: fbUser.photoURL || null,
+                    isAdmin: isAdmin,
+                    status: 'active',
+                    joinedAt: serverTimestamp(),
+                    lastBroadcastSeen: 0
+                });
+            } else {
+                await updateDoc(ref_, {
+                    name: fbUser.displayName || snap.data().name,
+                    avatar: fbUser.photoURL || snap.data().avatar || null,
+                    isAdmin: isAdmin
+                });
+            }
+            const fresh = (await getDoc(ref_)).data();
+            currentUser = {
+                uid: fbUser.uid,
+                email: fresh.email,
+                name: fresh.name,
+                avatar: fresh.avatar,
+                isAdmin: fresh.isAdmin,
+                status: fresh.status || 'active',
+                lastBroadcastSeen: fresh.lastBroadcastSeen || 0
+            };
+        }
+
+        /* ---------------- APP INIT ---------------- */
+        function initApp() {
+            updateUserAvatar();
+            if (currentUser.isAdmin) document.getElementById('dropdownUsersItem').style.display = 'flex';
+
+            // Realtime: all users (directory + admin panel + badges)
+            onSnapshot(collection(db, 'users'), (qs) => {
+                usersCache = [];
+                qs.forEach((d) => usersCache.push({ uid: d.id, ...d.data() }));
+                const adminDoc = usersCache.find((u) => u.isAdmin);
+                adminUidCache = adminDoc ? adminDoc.uid : null;
+                if (currentTab === 'discussions') renderChatList();
+                if (document.getElementById('usersModal').classList.contains('show')) renderUsersList();
+                if (document.getElementById('createGroupModal').classList.contains('show')) renderMemberListForCreate();
+            });
+
+            // Realtime: groups the user belongs to
+            onSnapshot(collection(db, 'groups'), (qs) => {
+                const all = [];
+                qs.forEach((d) => all.push({ id: d.id, ...d.data() }));
+                groupsCache = all.filter((g) => (g.members || []).indexOf(currentUser.uid) !== -1);
+                if (currentTab === 'groupes') renderChatList();
+                groupsCache.forEach((g) => watchGroupMessages(g.id));
+            });
+
+            // Realtime: statuses (last 24h)
+            const since = Timestamp.fromMillis(Date.now() - STATUS_LIFETIME_MS);
+            onSnapshot(query(collection(db, 'statuses'), where('createdAt', '>=', since), orderBy('createdAt', 'asc')), (qs) => {
+                statusesCache = [];
+                qs.forEach((d) => statusesCache.push({ id: d.id, ...d.data() }));
+                if (currentTab === 'statuts') renderStatutsBody();
+            });
+
+            // Realtime: broadcasts (support inbox)
+            onSnapshot(query(collection(db, 'broadcasts'), orderBy('createdAt', 'asc')), (qs) => {
+                broadcastsCache = [];
+                qs.forEach((d) => broadcastsCache.push({ id: d.id, ...d.data() }));
+                if (currentChat && currentChat.type === 'support') openChat(currentChat.chatKey);
+                renderChatList();
+            });
+
+            renderChatList();
+            handleGroupInviteLink();
+        }
+
+        function updateUserAvatar() {
+            const avatarDiv = document.getElementById('userAvatarDisplay');
+            if (currentUser.avatar) avatarDiv.innerHTML = '<img src="' + currentUser.avatar + '" alt="">';
+            else avatarDiv.textContent = (currentUser.name || '?').charAt(0).toUpperCase();
+        }
+
+        /* ---------------- CHAT LIST / TABS ---------------- */
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab').forEach((t) => t.classList.remove('active'));
+            const tabEl = document.querySelector('.nav-tab[data-tab="' + tab + '"]');
+            if (tabEl) tabEl.classList.add('active');
+            document.getElementById('inputArea').style.display = 'none';
+            document.getElementById('groupAddIcon').style.display = 'none';
+            document.getElementById('securedNote').style.display = 'none';
+            currentChat = null;
+            closeChatMobile();
+
+            if (tab === 'statuts') {
+                document.getElementById('chatTitle').textContent = 'Statuts';
+                renderStatutsBody();
+            } else {
+                document.getElementById('chatTitle').textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
+                document.getElementById('contentArea').innerHTML = '<div class="empty-list"><i class="fas fa-' + (tab === 'groupes' ? 'users' : 'comment-dots') + '"></i>Selectionne une conversation a gauche</div>';
+            }
+            renderChatList();
+        }
+        window.switchTab = switchTab;
+        function closeChatMobile() { document.getElementById('appContainer').classList.remove('chat-open'); }
+        window.closeChatMobile = closeChatMobile;
+
+        function renderChatList() {
+            if (currentTab === 'statuts') {
+                document.getElementById('chatList').innerHTML = '<div class="empty-list"><i class="fas fa-circle-notch"></i>Ouvre l onglet Statuts pour voir et publier des statuts</div>';
+                return;
+            }
+
+            let list = [];
+            if (currentTab === 'discussions') {
+                // Support/official chat always first
+                list.push({
+                    chatKey: 'support', type: 'support', name: SITE_NAME + ' Support',
+                    avatar: 'https://files.catbox.moe/zkdsun.png', isAdmin: true,
+                    lastMessage: 'Assistance officielle - toujours disponible'
+                });
+                // Everyone else registered on the site (real, shared directory)
+                usersCache
+                    .filter((u) => u.uid !== currentUser.uid && u.status !== 'banned')
+                    .forEach((u) => {
+                        list.push({
+                            chatKey: 'direct_' + u.uid, type: 'directory', name: u.name, avatar: u.avatar,
+                            isAdmin: u.isAdmin, otherUid: u.uid, lastMessage: 'Toucher pour demarrer une discussion'
+                        });
+                    });
+            } else if (currentTab === 'groupes') {
+                groupsCache.forEach((g) => {
+                    list.push({
+                        chatKey: 'group_' + g.id, type: 'group', name: g.name, avatar: g.photo,
+                        groupId: g.id, lastMessage: g.lastMessage || 'Nouveau groupe'
+                    });
+                });
+            }
+
+            if (list.length === 0) {
+                document.getElementById('chatList').innerHTML = '<div class="empty-list"><i class="fas fa-' + (currentTab === 'groupes' ? 'users' : 'comments') + '"></i>' + (currentTab === 'groupes' ? 'Aucun groupe pour le moment' : 'Aucune discussion') + '</div>';
+                return;
+            }
+
+            document.getElementById('chatList').innerHTML = list.map((chat) => {
+                const activeClass = (currentChat && currentChat.chatKey === chat.chatKey) ? 'active-chat' : '';
+                const dirClass = chat.type === 'directory' ? 'directory-item' : '';
+                let onclickAttr;
+                if (chat.type === 'directory') onclickAttr = 'startDirectChat(\'' + chat.otherUid + '\')';
+                else if (chat.type === 'support') onclickAttr = 'openChat(\'support\')';
+                else onclickAttr = 'openChat(\'' + chat.chatKey + '\')';
+                return '<div class="chat-item ' + activeClass + ' ' + dirClass + '" onclick="' + onclickAttr + '">' +
+                    '<div class="chat-avatar">' + avatarInner(chat.avatar, chat.type === 'group' ? '\uD83D\uDC65' : '\uD83D\uDC64') + '</div>' +
+                    '<div class="chat-info">' +
+                        '<div class="chat-name">' + escapeHtml(chat.name) + verifiedBadge(chat.isAdmin) + '</div>' +
+                        '<div class="chat-message">' + escapeHtml(chat.lastMessage) + '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function startDirectChat(otherUid) {
+            switchTab('discussions');
+            openChat('direct_' + otherUid);
+        }
+        window.startDirectChat = startDirectChat;
+
+        /* ---------------- MESSAGING ---------------- */
+        function watchDirectMessages(chatId) {
+            if (msgUnsubs[chatId]) return;
+            msgUnsubs[chatId] = onSnapshot(
+                query(collection(db, 'directChats', chatId, 'messages'), orderBy('createdAt', 'asc')),
+                (qs) => {
+                    const msgs = [];
+                    qs.forEach((d) => msgs.push({ id: d.id, ...d.data() }));
+                    if (!directChatsCache[chatId]) directChatsCache[chatId] = {};
+                    directChatsCache[chatId].messages = msgs;
+                    if (currentChat && currentChat.type === 'direct' && currentChat.chatId === chatId) renderCurrentChatMessages();
+                }
+            );
+        }
+        function watchGroupMessages(groupId) {
+            if (groupMsgUnsubs[groupId]) return;
+            groupMsgUnsubs[groupId] = onSnapshot(
+                query(collection(db, 'groups', groupId, 'messages'), orderBy('createdAt', 'asc')),
+                (qs) => {
+                    const msgs = [];
+                    qs.forEach((d) => msgs.push({ id: d.id, ...d.data() }));
+                    directChatsCache['group_' + groupId] = { messages: msgs };
+                    if (currentChat && currentChat.type === 'group' && currentChat.groupId === groupId) renderCurrentChatMessages();
+                }
+            );
+        }
+
+        async function openChat(chatKey) {
+            document.getElementById('appContainer').classList.add('chat-open');
+            document.getElementById('inputArea').style.display = 'flex';
+            document.getElementById('groupAddIcon').style.display = 'none';
+            document.getElementById('securedNote').style.display = 'none';
+
+            if (chatKey === 'support') {
+                if (!adminUidCache) {
+                    currentChat = { chatKey: 'support', type: 'support' };
+                    document.getElementById('chatTitle').innerHTML = SITE_NAME + ' Support' + verifiedBadge(true);
+                    document.getElementById('securedNote').style.display = 'block';
+                    document.getElementById('contentArea').innerHTML = '<div class="empty-list"><i class="fas fa-user-shield"></i>Le compte officiel n a pas encore ete configure sur cet espace. Reviens bientot.</div>';
+                    document.getElementById('inputArea').style.display = 'none';
+                    renderChatList();
+                    return;
+                }
+                const chatId = directChatId(currentUser.uid, adminUidCache);
+                currentChat = { chatKey: 'support', type: 'support', chatId: chatId };
+                document.getElementById('chatTitle').innerHTML = SITE_NAME + ' Support' + verifiedBadge(true);
+                document.getElementById('securedNote').style.display = 'block';
+                watchDirectMessages(chatId);
+                renderCurrentChatMessages();
+                renderChatList();
+                return;
+            }
+
+            if (chatKey.indexOf('direct_') === 0) {
+                const otherUid = chatKey.replace('direct_', '');
+                const otherUser = usersCache.find((u) => u.uid === otherUid);
+                const chatId = directChatId(currentUser.uid, otherUid);
+                currentChat = { chatKey: chatKey, type: 'direct', chatId: chatId, otherUid: otherUid };
+                document.getElementById('chatTitle').innerHTML = escapeHtml(otherUser ? otherUser.name : 'Utilisateur') + verifiedBadge(otherUser && otherUser.isAdmin);
+                document.getElementById('securedNote').style.display = (otherUser && otherUser.isAdmin) ? 'block' : 'none';
+                watchDirectMessages(chatId);
+                renderCurrentChatMessages();
+                renderChatList();
+                return;
+            }
+
+            if (chatKey.indexOf('group_') === 0) {
+                const groupId = chatKey.replace('group_', '');
+                const group = groupsCache.find((g) => g.id === groupId);
+                if (!group) return;
+                currentChat = { chatKey: chatKey, type: 'group', groupId: groupId };
+                document.getElementById('chatTitle').textContent = group.name;
+                document.getElementById('groupAddIcon').style.display = 'inline-block';
+                watchGroupMessages(groupId);
+                renderCurrentChatMessages();
+                renderChatList();
+                return;
+            }
+        }
+        window.openChat = openChat;
+
+        function renderCurrentChatMessages() {
+            if (!currentChat) return;
+            let msgs = [];
+            let cacheKey = currentChat.type === 'group' ? ('group_' + currentChat.groupId) : currentChat.chatId;
+            if (directChatsCache[cacheKey]) msgs = directChatsCache[cacheKey].messages || [];
+
+            let extra = [];
+            if (currentChat.type === 'support') {
+                extra = broadcastsCache
+                    .filter((b) => !b.createdAt || b.createdAt.toMillis() > 0)
+                    .map((b) => ({ senderId: 'broadcast', text: b.text, createdAt: b.createdAt, isBroadcast: true }));
+            }
+            const merged = msgs.concat(extra).sort((a, b) => {
+                const ta = a.createdAt ? a.createdAt.toMillis() : 0;
+                const tb = b.createdAt ? b.createdAt.toMillis() : 0;
+                return ta - tb;
+            });
+
+            const isGroup = currentChat.type === 'group';
+            let html = merged.map((m) => {
+                const mine = m.senderId === currentUser.uid;
+                const bg = mine ? 'var(--primary)' : (m.isBroadcast ? 'rgba(212,160,23,0.2)' : 'var(--bg-card)');
+                const align = mine ? 'flex-end' : 'flex-start';
+                const time = m.createdAt ? new Date(m.createdAt.toMillis()).toLocaleTimeString() : '';
+                let senderLabel = '';
+                if (isGroup && !mine) senderLabel = '<div class="msg-sender">' + escapeHtml(m.senderName || '') + '</div>';
+                if (m.isBroadcast) senderLabel = '<div class="msg-sender"><i class="fas fa-bullhorn"></i> Annonce officielle</div>';
+                let bodyHtml;
+                if (m.type === 'audio' && m.audioUrl) {
+                    const durLabel = m.audioDuration ? (Math.floor(m.audioDuration / 60) + ':' + (m.audioDuration % 60 < 10 ? '0' : '') + (m.audioDuration % 60)) : '';
+                    bodyHtml = '<div style="display:flex;align-items:center;gap:8px;"><i class="fas fa-microphone" style="color:var(--secondary);"></i><audio controls src="' + m.audioUrl + '"></audio>' + (durLabel ? ('<span style="font-size:0.72rem;color:var(--text-secondary);">' + durLabel + '</span>') : '') + '</div>';
+                } else {
+                    bodyHtml = escapeHtml(m.text);
+                }
+                return '<div class="msg-bubble" style="align-self:' + align + ';background:' + bg + ';">' + senderLabel + bodyHtml + '<div class="msg-time">' + time + '</div></div>';
+            }).join('');
+
+            if (currentChat.type === 'group') {
+                const group = groupsCache.find((g) => g.id === currentChat.groupId);
+                const groupLink = window.location.origin + window.location.pathname + '?group=' + currentChat.groupId;
+                html += '<div style="text-align:center;margin:16px 0;">' +
+                    '<div style="color:var(--text-secondary);font-size:0.8rem;margin-bottom:8px;">' + ((group && group.members || []).length) + ' membre(s)</div>' +
+                    '<button class="copy-link-btn" onclick="copyGroupLink(\'' + groupLink + '\')"><i class="fas fa-link"></i> Copier le lien</button>' +
+                    '<button class="add-member-btn" onclick="openAddMembers()"><i class="fas fa-user-plus"></i> Ajouter</button>' +
+                '</div>';
+            }
+
+            document.getElementById('contentArea').innerHTML = '<div style="display:flex;flex-direction:column;">' + (html || '<div class="empty-list"><i class="fas fa-comment"></i>Aucun message pour le moment</div>') + '</div>';
+            document.getElementById('contentArea').scrollTop = document.getElementById('contentArea').scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !currentChat) return;
+            input.value = '';
+            await sendChatMessage({ type: 'text', text: text });
+        }
+        window.sendMessage = sendMessage;
+
+        // Shared sender used by both text messages and voice notes, for direct/support/group chats.
+        async function sendChatMessage(payload) {
+            if (!currentChat) return;
+            const base = {
+                senderId: currentUser.uid,
+                senderName: currentUser.name,
+                type: payload.type,
+                text: payload.text || '',
+                audioUrl: payload.audioUrl || null,
+                audioDuration: payload.audioDuration || 0,
+                createdAt: serverTimestamp()
+            };
+            const preview = payload.type === 'audio' ? '\uD83C\uDFA4 Message vocal' : payload.text;
+
+            if (currentChat.type === 'group') {
+                await addDoc(collection(db, 'groups', currentChat.groupId, 'messages'), base);
+                await updateDoc(doc(db, 'groups', currentChat.groupId), { lastMessage: preview });
+                return;
+            }
+            const chatId = currentChat.chatId;
+            if (!chatId) return; // support with no admin yet
+            await addDoc(collection(db, 'directChats', chatId, 'messages'), base);
+            await setDoc(doc(db, 'directChats', chatId), {
+                participants: chatId.split('_'), lastMessage: preview, lastMessageAt: serverTimestamp()
+            }, { merge: true });
+        }
+
+        /* ---------------- VOICE NOTES ---------------- */
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStartTime = 0;
+        let recordingTimerInterval = null;
+        let recordingStream = null;
+
+        async function toggleVoiceRecording() {
+            if (!currentChat) { alert('Ouvre une discussion avant d enregistrer un vocal.'); return; }
+            if (mediaRecorder && mediaRecorder.state === 'recording') { stopVoiceRecording(); return; }
+            try {
+                recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (e) {
+                alert('Impossible d acceder au microphone : ' + e.message + '. Verifie les autorisations du navigateur.');
+                return;
+            }
+            recordedChunks = [];
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+            mediaRecorder = mimeType ? new MediaRecorder(recordingStream, { mimeType }) : new MediaRecorder(recordingStream);
+            mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.start();
+            recordingStartTime = Date.now();
+            document.getElementById('inputArea').style.display = 'none';
+            document.getElementById('recordingBar').style.display = 'flex';
+            updateRecordingTimer();
+            recordingTimerInterval = setInterval(updateRecordingTimer, 500);
+        }
+        window.toggleVoiceRecording = toggleVoiceRecording;
+
+        function updateRecordingTimer() {
+            const secs = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            document.getElementById('recordingTimer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        function stopRecordingStreamAndUI() {
+            clearInterval(recordingTimerInterval);
+            if (recordingStream) recordingStream.getTracks().forEach((t) => t.stop());
+            document.getElementById('recordingBar').style.display = 'none';
+            document.getElementById('inputArea').style.display = 'flex';
+        }
+
+        function cancelVoiceRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.onstop = () => { recordedChunks = []; };
+                mediaRecorder.stop();
+            }
+            stopRecordingStreamAndUI();
+        }
+        window.cancelVoiceRecording = cancelVoiceRecording;
+
+        function stopVoiceRecording() {
+            if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+            const durationSec = Math.round((Date.now() - recordingStartTime) / 1000);
+            mediaRecorder.onstop = async () => {
+                stopRecordingStreamAndUI();
+                if (!recordedChunks.length) return;
+                const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                document.getElementById('voiceBtnIcon').className = 'fas fa-spinner fa-spin';
+                try {
+                    const storageRef = ref(storage, 'voiceNotes/' + currentUser.uid + '/' + Date.now() + '.webm');
+                    await uploadBytes(storageRef, blob);
+                    const url = await getDownloadURL(storageRef);
+                    await sendChatMessage({ type: 'audio', audioUrl: url, audioDuration: durationSec });
+                } catch (e) {
+                    alert('Erreur envoi du vocal : ' + e.message);
+                } finally {
+                    document.getElementById('voiceBtnIcon').className = 'fas fa-microphone';
+                }
+            };
+            mediaRecorder.stop();
+        }
+        window.stopVoiceRecording = stopVoiceRecording;
+
+        /* ---------------- GROUPS ---------------- */
+        function createNewGroup() {
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupPhoto').value = '';
+            document.getElementById('groupPhotoPreview').style.display = 'none';
+            groupPhotoFile = null;
+            selectedMembers = [];
+            renderMemberListForCreate();
+            document.getElementById('dropdownMenu').classList.remove('show');
+            document.getElementById('createGroupModal').classList.add('show');
+        }
+        window.createNewGroup = createNewGroup;
+
+        function renderMemberListForCreate() {
+            const directory = usersCache.filter((u) => u.uid !== currentUser.uid);
+            document.getElementById('memberList').innerHTML = directory.map((u) => {
+                return '<label class="member-item">' +
+                    '<input type="checkbox" value="' + u.uid + '" onchange="toggleMember(\'' + u.uid + '\', this.checked)">' +
+                    '<div class="chat-avatar" style="width:36px;height:36px;margin-right:10px;">' + avatarInner(u.avatar) + '</div>' +
+                    '<span>' + escapeHtml(u.name) + verifiedBadge(u.isAdmin) + '</span>' +
+                '</label>';
+            }).join('') || '<p style="color:var(--text-secondary);text-align:center;">Aucun autre utilisateur inscrit pour le moment.</p>';
+        }
+        function toggleMember(uid, checked) {
+            if (checked) selectedMembers.push(uid); else selectedMembers = selectedMembers.filter((m) => m !== uid);
+        }
+        window.toggleMember = toggleMember;
+
+        function previewGroupPhoto(input) {
+            if (input.files && input.files[0]) {
+                groupPhotoFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('groupPhotoPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(groupPhotoFile);
+            }
+        }
+        window.previewGroupPhoto = previewGroupPhoto;
+
+        async function createGroup() {
+            const name = document.getElementById('groupName').value.trim();
+            if (!name) { alert('Veuillez entrer un nom pour le groupe'); return; }
+            const btn = document.getElementById('createGroupBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Creation...';
+            try {
+                let photoUrl = null;
+                if (groupPhotoFile) {
+                    const storageRef = ref(storage, 'groupPhotos/' + Date.now() + '_' + groupPhotoFile.name);
+                    await uploadBytes(storageRef, groupPhotoFile);
+                    photoUrl = await getDownloadURL(storageRef);
+                }
+                const members = [currentUser.uid].concat(selectedMembers);
+                const groupRef = await addDoc(collection(db, 'groups'), {
+                    name: name, photo: photoUrl, members: members, createdBy: currentUser.uid,
+                    createdAt: serverTimestamp(), lastMessage: 'Groupe cree'
+                });
+                await addDoc(collection(db, 'groups', groupRef.id, 'messages'), {
+                    senderId: 'system', senderName: 'Systeme', text: 'Groupe cree par ' + currentUser.name, createdAt: serverTimestamp()
+                });
+                closeModal('createGroupModal');
+                switchTab('groupes');
+                setTimeout(() => openChat('group_' + groupRef.id), 300);
+            } catch (e) {
+                alert('Erreur lors de la creation du groupe : ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Creer le groupe';
+            }
+        }
+        window.createGroup = createGroup;
+
+        function copyGroupLink(link) {
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Lien copie. Toute personne inscrite sur le site qui ouvre ce lien rejoint le groupe.');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = link;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Lien copie !');
+            });
+        }
+        window.copyGroupLink = copyGroupLink;
+
+        function openAddMembers() {
+            if (!currentChat || currentChat.type !== 'group') return;
+            const group = groupsCache.find((g) => g.id === currentChat.groupId);
+            if (!group) return;
+            addMemberSelection = [];
+            const directory = usersCache.filter((u) => u.uid !== currentUser.uid && (group.members || []).indexOf(u.uid) === -1);
+            document.getElementById('addMemberList').innerHTML = directory.map((u) => {
+                return '<label class="member-item">' +
+                    '<input type="checkbox" value="' + u.uid + '" onchange="toggleAddMember(\'' + u.uid + '\', this.checked)">' +
+                    '<div class="chat-avatar" style="width:36px;height:36px;margin-right:10px;">' + avatarInner(u.avatar) + '</div>' +
+                    '<span>' + escapeHtml(u.name) + verifiedBadge(u.isAdmin) + '</span>' +
+                '</label>';
+            }).join('') || '<p style="color:var(--text-secondary);text-align:center;">Tous les utilisateurs inscrits sont deja dans ce groupe.</p>';
+            document.getElementById('dropdownMenu').classList.remove('show');
+            document.getElementById('addMembersModal').classList.add('show');
+        }
+        window.openAddMembers = openAddMembers;
+        function toggleAddMember(uid, checked) {
+            if (checked) addMemberSelection.push(uid); else addMemberSelection = addMemberSelection.filter((m) => m !== uid);
+        }
+        window.toggleAddMember = toggleAddMember;
+
+        async function confirmAddMembers() {
+            if (!currentChat || addMemberSelection.length === 0) { closeModal('addMembersModal'); return; }
+            const group = groupsCache.find((g) => g.id === currentChat.groupId);
+            if (!group) return;
+            const newMembers = (group.members || []).concat(addMemberSelection);
+            await updateDoc(doc(db, 'groups', currentChat.groupId), { members: newMembers });
+            closeModal('addMembersModal');
+            alert(addMemberSelection.length + ' membre(s) ajoute(s) au groupe.');
+        }
+        window.confirmAddMembers = confirmAddMembers;
+
+        // Group invite link handling (?group=ID in URL)
+        async function handleGroupInviteLink() {
+            const params = new URLSearchParams(window.location.search);
+            const groupId = params.get('group');
+            if (!groupId) return;
+            const gRef = doc(db, 'groups', groupId);
+            const snap = await getDoc(gRef);
+            if (!snap.exists()) return;
+            const data = snap.data();
+            if ((data.members || []).indexOf(currentUser.uid) === -1) {
+                await updateDoc(gRef, { members: (data.members || []).concat([currentUser.uid]) });
+            }
+            setTimeout(() => { switchTab('groupes'); openChat('group_' + groupId); }, 500);
+        }
+
+        /* ---------------- UI: DROPDOWN / MODALS ---------------- */
+        function toggleDropdown() { document.getElementById('dropdownMenu').classList.toggle('show'); }
+        window.toggleDropdown = toggleDropdown;
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+        window.closeModal = closeModal;
+
+        function showPremium() {
+            document.getElementById('premiumModal').classList.add('show');
+            document.getElementById('dropdownMenu').classList.remove('show');
+            renderEbooks();
+        }
+        window.showPremium = showPremium;
+        function switchShopTab(tab) {
+            document.querySelectorAll('.shop-tab-btn').forEach((b) => b.classList.remove('active'));
+            document.querySelector('.shop-tab-btn[data-shop="' + tab + '"]').classList.add('active');
+            document.querySelectorAll('.shop-section').forEach((s) => s.classList.remove('active'));
+            document.getElementById('shop-' + tab).classList.add('active');
+        }
+        window.switchShopTab = switchShopTab;
+        function renderEbooks() {
+            document.getElementById('ebookGrid').innerHTML = EBOOKS.map((e, i) => {
+                return '<div class="ebook-card">' +
+                    '<div class="ebook-cover"><img src="' + e.img + '" alt=""></div>' +
+                    '<div class="ebook-body">' +
+                        '<h4>' + escapeHtml(e.title) + '</h4>' +
+                        '<p>' + escapeHtml(e.desc) + '</p>' +
+                        '<div class="ebook-price">' + e.price.toLocaleString() + ' FCFA</div>' +
+                        '<button class="pay-btn" onclick="payWithWave(' + e.price + ', EBOOKS[' + i + '].title)"><i class="fas fa-credit-card"></i> Acheter</button>' +
+                        '<button class="agent-btn" onclick="contactAgent(EBOOKS[' + i + '].title, ' + e.price + ')"><i class="fab fa-whatsapp"></i> Contacter le service de paiement</button>' +
+                        '<button class="agent-email-btn" onclick="contactAgentEmail(EBOOKS[' + i + '].title, ' + e.price + ')"><i class="fas fa-envelope"></i> Par e-mail</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+        window.EBOOKS = EBOOKS;
+        function payWithWave(amount, label) {
+            window.open('https://pay.wave.com/m/M_ci_1b28SETSqjI6/c/ci/?amount=' + amount, '_blank');
+            closeModal('premiumModal');
+        }
+        window.payWithWave = payWithWave;
+        function contactAgent(label, price) {
+            const msg = 'Bonjour, je souhaite payer : ' + label + ' (' + price + ' FCFA). Je ne suis pas dans la zone couverte par Wave, merci de m aider a finaliser le paiement.';
+            window.open('https://wa.me/' + AGENT_WHATSAPP + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+        window.contactAgent = contactAgent;
+        function contactAgentEmail(label, price) {
+            const subject = 'Paiement ' + label + ' - ' + price + ' FCFA';
+            const body = 'Bonjour,\n\nJe souhaite payer : ' + label + ' (' + price + ' FCFA). Je ne peux pas utiliser Wave depuis ma region, merci de me proposer une alternative.\n\nMerci.';
+            window.location.href = 'mailto:' + AGENT_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+        }
+        window.contactAgentEmail = contactAgentEmail;
+
+        /* ---------------- USERS DIRECTORY / ADMIN ---------------- */
+        function openUsersPanel() {
+            document.getElementById('dropdownMenu').classList.remove('show');
+            renderUsersList();
+            document.getElementById('usersModal').classList.add('show');
+        }
+        window.openUsersPanel = openUsersPanel;
+
+        function renderUsersList() {
+            const html = usersCache.map((u) => {
+                const status = u.status || 'active';
+                return '<div class="user-row">' +
+                    '<div class="chat-avatar" style="width:42px;height:42px;">' + avatarInner(u.avatar) + '</div>' +
+                    '<div class="u-info">' +
+                        '<div style="font-weight:600;">' + escapeHtml(u.name) + verifiedBadge(u.isAdmin) + '</div>' +
+                        '<div style="color:var(--text-secondary);font-size:0.8rem;">' + escapeHtml(u.email) + '</div>' +
+                        '<span class="u-status ' + status + '">' + (status === 'active' ? 'Actif' : (status === 'suspended' ? 'Suspendu' : 'Banni')) + '</span>' +
+                    '</div>' +
+                    '<div class="u-actions">' +
+                        '<button onclick="setUserStatus(\'' + u.uid + '\',\'' + (status === 'suspended' ? 'active' : 'suspended') + '\')">' + (status === 'suspended' ? 'Reactiver' : 'Suspendre') + '</button>' +
+                        '<button onclick="setUserStatus(\'' + u.uid + '\',\'' + (status === 'banned' ? 'active' : 'banned') + '\')">' + (status === 'banned' ? 'Debannir' : 'Bannir') + '</button>' +
+                        '<button onclick="messageUser(\'' + u.uid + '\')"><i class="fas fa-paper-plane"></i></button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            document.getElementById('usersList').innerHTML = html || '<p style="color:var(--text-secondary);text-align:center;">Aucun utilisateur enregistre pour le moment</p>';
+        }
+        async function setUserStatus(uid, status) {
+            await updateDoc(doc(db, 'users', uid), { status: status });
+        }
+        window.setUserStatus = setUserStatus;
+        function messageUser(uid) {
+            closeModal('usersModal');
+            startDirectChat(uid);
+        }
+        window.messageUser = messageUser;
+        async function sendBroadcast() {
+            const text = document.getElementById('broadcastText').value.trim();
+            if (!text) return;
+            await addDoc(collection(db, 'broadcasts'), { text: text, createdAt: serverTimestamp(), sentBy: currentUser.uid });
+            document.getElementById('broadcastText').value = '';
+            alert('Message envoye a tous les utilisateurs (visible dans leur discussion Support).');
+        }
+        window.sendBroadcast = sendBroadcast;
+
+        /* ---------------- PROFILE ---------------- */
+        function openProfile() {
+            document.getElementById('dropdownMenu').classList.remove('show');
+            const s = getLocalSettings();
+            let html = '';
+            html += '<div style="text-align:center;margin-bottom:22px;">' +
+                '<div style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;overflow:hidden;">' +
+                    (currentUser.avatar ? ('<img src="' + currentUser.avatar + '" style="width:100%;height:100%;object-fit:cover;">') : currentUser.name.charAt(0).toUpperCase()) +
+                '</div>' +
+            '</div>';
+
+            html += '<div class="settings-block"><h4><i class="fas fa-id-card"></i> Informations</h4>' +
+                '<div class="form-group" style="margin-bottom:10px;"><label>Nom affiche</label><input type="text" id="profileNameInput" value="' + escapeHtml(currentUser.name) + '"></div>' +
+                '<p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:12px;">' + escapeHtml(currentUser.email) + verifiedBadge(currentUser.isAdmin) + '</p>' +
+                '<button class="btn btn-primary" style="width:100%;" onclick="saveProfileName()">Enregistrer le nom</button>' +
+            '</div>';
+
+            html += '<div class="settings-block"><h4><i class="fas fa-text-height"></i> Taille du texte</h4>' +
+                '<div class="segmented">' +
+                    '<button class="' + (s.fontSize === 'small' ? 'active' : '') + '" onclick="setFontSize(\'small\')">Petit</button>' +
+                    '<button class="' + (s.fontSize === 'medium' || !s.fontSize ? 'active' : '') + '" onclick="setFontSize(\'medium\')">Moyen</button>' +
+                    '<button class="' + (s.fontSize === 'large' ? 'active' : '') + '" onclick="setFontSize(\'large\')">Grand</button>' +
+                '</div></div>';
+
+            html += '<div class="settings-block"><h4><i class="fas fa-image"></i> Fond d ecran des discussions</h4>' +
+                '<label class="file-label" onclick="document.getElementById(\'wallpaperInput\').click()">' +
+                    '<i class="fas fa-upload"></i> Importer une photo' +
+                    '<input type="file" id="wallpaperInput" class="file-input" accept="image/*" onchange="setWallpaper(this)">' +
+                '</label>' +
+                (s.wallpaper ? ('<div class="wallpaper-preview" style="background-image:url(' + s.wallpaper + ')"></div><button class="btn btn-secondary" style="width:100%;margin-top:10px;" onclick="clearWallpaper()">Retirer le fond d ecran</button>') : '') +
+                '<p style="color:var(--text-secondary);font-size:0.78rem;margin-top:10px;">Cette photo s applique a toutes tes conversations sur cet appareil.</p>' +
+            '</div>';
+
+            if (currentUser.isAdmin) {
+                html += '<div class="settings-block"><h4><i class="fas fa-user-shield"></i> Administration</h4>' +
+                    '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(\'profileModal\');openUsersPanel();">Gerer les utilisateurs</button>' +
+                '</div>';
+            }
+
+            document.getElementById('profileContent').innerHTML = html;
+            document.getElementById('profileModal').classList.add('show');
+        }
+        window.openProfile = openProfile;
+        async function saveProfileName() {
+            const name = document.getElementById('profileNameInput').value.trim();
+            if (!name) return;
+            currentUser.name = name;
+            await updateDoc(doc(db, 'users', currentUser.uid), { name: name });
+            updateUserAvatar();
+            renderChatList();
+            alert('Nom mis a jour !');
+        }
+        window.saveProfileName = saveProfileName;
+
+        // Local (per-device) display settings only: font size + wallpaper are cosmetic and stay local.
+        function getLocalSettings() {
+            try { return JSON.parse(localStorage.getItem('displaySettings') || '{"fontSize":"medium","wallpaper":null}'); }
+            catch (e) { return { fontSize: 'medium', wallpaper: null }; }
+        }
+        function saveLocalSettings(s) { localStorage.setItem('displaySettings', JSON.stringify(s)); }
+        function applyLocalSettings() {
+            const s = getLocalSettings();
+            const scaleMap = { small: 0.9, medium: 1, large: 1.15 };
+            document.documentElement.style.setProperty('--font-scale', scaleMap[s.fontSize] || 1);
+            const main = document.getElementById('mainContent');
+            if (s.wallpaper) main.style.backgroundImage = 'linear-gradient(rgba(26,10,10,0.75),rgba(26,10,10,0.75)), url(' + s.wallpaper + ')';
+            else main.style.backgroundImage = 'none';
+        }
+        function setFontSize(size) { const s = getLocalSettings(); s.fontSize = size; saveLocalSettings(s); applyLocalSettings(); openProfile(); }
+        window.setFontSize = setFontSize;
+        function setWallpaper(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { const s = getLocalSettings(); s.wallpaper = e.target.result; saveLocalSettings(s); applyLocalSettings(); openProfile(); };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        window.setWallpaper = setWallpaper;
+        function clearWallpaper() { const s = getLocalSettings(); s.wallpaper = null; saveLocalSettings(s); applyLocalSettings(); openProfile(); }
+        window.clearWallpaper = clearWallpaper;
+
+        /* ---------------- STATUTS (stories) ---------------- */
+        function groupStatusesByOwner() {
+            const byOwner = {};
+            statusesCache.forEach((s) => {
+                if (!byOwner[s.ownerId]) byOwner[s.ownerId] = [];
+                byOwner[s.ownerId].push(s);
+            });
+            return byOwner;
+        }
+        function renderStatutsBody() {
+            const byOwner = groupStatusesByOwner();
+            const mine = byOwner[currentUser.uid] || [];
+            const others = Object.keys(byOwner).filter((k) => k !== currentUser.uid);
+
+            let html = '<div style="max-width:520px;margin:0 auto;">';
+            html += '<div class="chat-item" style="background:var(--bg-card);margin-bottom:16px;" onclick="openAddStatusMenu()">' +
+                '<div class="chat-avatar"><i class="fas fa-plus"></i></div>' +
+                '<div class="chat-info"><div class="chat-name">Mon statut</div><div class="chat-message">' + (mine.length ? mine.length + ' statut(s) actif(s) - toucher pour en ajouter un autre' : 'Texte, photo ou video (max ' + MAX_STATUS_VIDEO_SECONDS + 's), visible 24h') + '</div></div>' +
+            '</div>';
+
+            if (mine.length) {
+                html += '<div class="chat-item directory-item" onclick="openStoryViewer(\'' + currentUser.uid + '\')">' +
+                    '<div class="chat-avatar story-ring">' + avatarInner(currentUser.avatar) + '</div>' +
+                    '<div class="chat-info"><div class="chat-name">Voir mes statuts</div><div class="chat-message">' + mine.length + ' statut(s)</div></div>' +
+                '</div>';
+            }
+
+            if (others.length) {
+                html += '<div class="section-label">Statuts recents</div>';
+                others.forEach((uid) => {
+                    const arr = byOwner[uid];
+                    const last = arr[arr.length - 1];
+                    const t = last.createdAt ? new Date(last.createdAt.toMillis()).toLocaleString() : '';
+                    html += '<div class="chat-item" onclick="openStoryViewer(\'' + uid + '\')">' +
+                        '<div class="chat-avatar story-ring">' + avatarInner(last.ownerAvatar) + '</div>' +
+                        '<div class="chat-info"><div class="chat-name">' + escapeHtml(last.ownerName) + '</div><div class="chat-message">' + arr.length + ' statut(s) - ' + t + '</div></div>' +
+                    '</div>';
+                });
+            } else {
+                html += '<div class="empty-list"><i class="fas fa-circle-notch"></i>Aucun autre statut pour le moment</div>';
+            }
+            html += '</div>';
+            document.getElementById('contentArea').innerHTML = html;
+        }
+
+        function openAddStatusMenu() { document.getElementById('addStatusModal').classList.add('show'); }
+        window.openAddStatusMenu = openAddStatusMenu;
+
+        function openTextStatusModal() {
+            selectedTextColor = STATUS_COLORS[Math.floor(Math.random() * STATUS_COLORS.length)];
+            document.getElementById('textStatusInput').value = '';
+            document.getElementById('statusColorRow').innerHTML = STATUS_COLORS.map((c) =>
+                '<div class="status-color-swatch ' + (c === selectedTextColor ? 'selected' : '') + '" style="background:' + c + '" onclick="selectStatusColor(\'' + c + '\')"></div>'
+            ).join('');
+            updateTextStatusPreview();
+            document.getElementById('textStatusModal').classList.add('show');
+        }
+        window.openTextStatusModal = openTextStatusModal;
+        function selectStatusColor(c) {
+            selectedTextColor = c;
+            document.querySelectorAll('.status-color-swatch').forEach((el) => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+            updateTextStatusPreview();
+        }
+        window.selectStatusColor = selectStatusColor;
+        function updateTextStatusPreview() {
+            const text = document.getElementById('textStatusInput').value || 'Ecris ton statut...';
+            const preview = document.getElementById('textStatusPreview');
+            preview.textContent = text;
+            preview.style.background = selectedTextColor;
+        }
+        window.updateTextStatusPreview = updateTextStatusPreview;
+
+        async function postTextStatus() {
+            const text = document.getElementById('textStatusInput').value.trim();
+            if (!text) { alert('Ecris quelque chose avant de publier.'); return; }
+            try {
+                await addDoc(collection(db, 'statuses'), {
+                    ownerId: currentUser.uid, ownerName: currentUser.name, ownerAvatar: currentUser.avatar || null,
+                    type: 'text', text: text, color: selectedTextColor, createdAt: serverTimestamp()
+                });
+                closeModal('textStatusModal');
+            } catch (e) {
+                alert('Erreur publication du statut : ' + e.message);
+            }
+        }
+        window.postTextStatus = postTextStatus;
+
+        async function handleStatusPhoto(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            document.getElementById('addStatusModal').classList.remove('show');
+            try {
+                const storageRef = ref(storage, 'statuses/' + currentUser.uid + '/' + Date.now() + '_' + file.name);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                await addDoc(collection(db, 'statuses'), {
+                    ownerId: currentUser.uid, ownerName: currentUser.name, ownerAvatar: currentUser.avatar || null,
+                    type: 'image', mediaUrl: url, createdAt: serverTimestamp()
+                });
+            } catch (e) {
+                alert('Erreur publication du statut photo : ' + e.message);
+            } finally {
+                input.value = '';
+            }
+        }
+        window.handleStatusPhoto = handleStatusPhoto;
+
+        function handleStatusVideo(input) {
+            if (!input.files || !input.files[0]) return;
+            pendingTrimFile = input.files[0];
+            document.getElementById('addStatusModal').classList.remove('show');
+            const video = document.getElementById('trimVideoPreview');
+            video.src = URL.createObjectURL(pendingTrimFile);
+            video.onloadedmetadata = () => {
+                pendingTrimDuration = video.duration;
+                const range = document.getElementById('trimRange');
+                range.min = 0;
+                range.max = Math.max(0, pendingTrimDuration - Math.min(MAX_STATUS_VIDEO_SECONDS, pendingTrimDuration));
+                range.value = 0;
+                pendingTrimStart = 0;
+                updateTrimInfo();
+                document.getElementById('trimModal').classList.add('show');
+            };
+            input.value = '';
+        }
+        window.handleStatusVideo = handleStatusVideo;
+
+        function onTrimRangeChange() {
+            pendingTrimStart = parseFloat(document.getElementById('trimRange').value);
+            document.getElementById('trimVideoPreview').currentTime = pendingTrimStart;
+            updateTrimInfo();
+        }
+        window.onTrimRangeChange = onTrimRangeChange;
+        function updateTrimInfo() {
+            const end = Math.min(pendingTrimDuration, pendingTrimStart + MAX_STATUS_VIDEO_SECONDS);
+            document.getElementById('trimInfo').textContent = 'Segment : ' + pendingTrimStart.toFixed(1) + 's - ' + end.toFixed(1) + 's (max ' + MAX_STATUS_VIDEO_SECONDS + 's)';
+        }
+
+        async function confirmTrim() {
+            if (!pendingTrimFile) return;
+            const btn = document.getElementById('confirmTrimBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Envoi...';
+            try {
+                const storageRef = ref(storage, 'statuses/' + currentUser.uid + '/' + Date.now() + '_' + pendingTrimFile.name);
+                await uploadBytes(storageRef, pendingTrimFile);
+                const url = await getDownloadURL(storageRef);
+                await addDoc(collection(db, 'statuses'), {
+                    ownerId: currentUser.uid, ownerName: currentUser.name, ownerAvatar: currentUser.avatar || null,
+                    type: 'video', mediaUrl: url, trimStart: pendingTrimStart,
+                    trimEnd: Math.min(pendingTrimDuration, pendingTrimStart + MAX_STATUS_VIDEO_SECONDS),
+                    createdAt: serverTimestamp()
+                });
+                closeModal('trimModal');
+            } catch (e) {
+                alert('Erreur publication du statut video : ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Utiliser ce segment';
+                pendingTrimFile = null;
+            }
+        }
+        window.confirmTrim = confirmTrim;
+
+        /* ---------------- STORY VIEWER ---------------- */
+        function openStoryViewer(ownerUid) {
+            const byOwner = groupStatusesByOwner();
+            storyQueue = byOwner[ownerUid] || [];
+            if (!storyQueue.length) return;
+            storyIndex = 0;
+            document.getElementById('storyViewer').classList.add('show');
+            renderStoryProgressBars();
+            showStoryAt(0);
+        }
+        window.openStoryViewer = openStoryViewer;
+
+        function renderStoryProgressBars() {
+            document.getElementById('storyProgressRow').innerHTML = storyQueue.map(() =>
+                '<div class="story-progress-track"><div class="story-progress-fill"></div></div>'
+            ).join('');
+        }
+
+        function showStoryAt(idx) {
+            clearTimeout(storyTimer);
+            if (idx < 0) { closeStoryViewer(); return; }
+            if (idx >= storyQueue.length) { closeStoryViewer(); return; }
+            storyIndex = idx;
+            const s = storyQueue[idx];
+            document.getElementById('storyAvatar').innerHTML = avatarInner(s.ownerAvatar);
+            document.getElementById('storyName').textContent = s.ownerName;
+            document.getElementById('storyTime').textContent = s.createdAt ? new Date(s.createdAt.toMillis()).toLocaleString() : '';
+
+            const fills = document.querySelectorAll('.story-progress-fill');
+            fills.forEach((f, i) => { f.style.width = i < idx ? '100%' : '0%'; });
+
+            const body = document.getElementById('storyBody');
+            const tapZones = '<div class="story-tap-zone" style="left:0;" onclick="prevStory()"></div><div class="story-tap-zone" style="right:0;" onclick="nextStory()"></div>';
+            let mediaHtml = '';
+            let duration = 5000;
+            if (s.type === 'text') {
+                mediaHtml = '<div class="story-text-slide" style="background:' + (s.color || '#A01020') + '">' + escapeHtml(s.text) + '</div>';
+            } else if (s.type === 'image') {
+                mediaHtml = '<img src="' + s.mediaUrl + '" alt="">';
+            } else if (s.type === 'video') {
+                mediaHtml = '<video src="' + s.mediaUrl + '" autoplay playsinline></video>';
+                duration = Math.max(2, (s.trimEnd || 10) - (s.trimStart || 0)) * 1000;
+            }
+            body.innerHTML = mediaHtml + tapZones;
+
+            if (fills[idx]) {
+                requestAnimationFrame(() => {
+                    fills[idx].style.transition = 'width ' + duration + 'ms linear';
+                    fills[idx].style.width = '100%';
+                });
+            }
+            storyTimer = setTimeout(() => nextStory(), duration);
+        }
+        function nextStory() { showStoryAt(storyIndex + 1); }
+        window.nextStory = nextStory;
+        function prevStory() { showStoryAt(storyIndex - 1); }
+        window.prevStory = prevStory;
+        function closeStoryViewer() {
+            clearTimeout(storyTimer);
+            document.getElementById('storyViewer').classList.remove('show');
+            const video = document.getElementById('storyBody').querySelector('video');
+            if (video) video.pause();
+        }
+        window.closeStoryViewer = closeStoryViewer;
+
+        /* ---------------- HELP ---------------- */
+        function openHelp() { document.getElementById('helpModal').classList.add('show'); }
+        window.openHelp = openHelp;
+        function contactSupport() {
+            closeModal('helpModal');
+            switchTab('discussions');
+            openChat('support');
+        }
+        window.contactSupport = contactSupport;
+
+        applyLocalSettings();
+    </script>
+</body>
+</html>
