@@ -493,8 +493,8 @@
         const EBOOKS = [
             {title:'Guide Marketing Digital', desc:'Vends et fais-toi connaître en ligne.', price:1500, img:'https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=400&q=60'},
             {title:'Créer son business en ligne', desc:'De zéro à ta première vente.', price:2000, img:'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=400&q=60'},
-            {title:'Maîtriser WhatsApp Business', desc:'Automatise et vends via Xmen.', price:1500, img:'https://images.unsplash.com/photo-1611606063065-ee7946f0787a?w=400&q=60'},
-            {title:'Freelance à l\\'international', desc:'Trouve des clients payés en devises.', price:2000, img:'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&q=60'},
+            {title:'Maîtriser WhatsApp Business', desc:'Automatise et vends via WhatsApp.', price:1500, img:'https://images.unsplash.com/photo-1611606063065-ee7946f0787a?w=400&q=60'},
+            {title:'Business Freelance International', desc:'Trouve des clients payés en devises.', price:2000, img:'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&q=60'},
             {title:'Pack Formations (900 cours)', desc:'Business, tech, marketing, design...', price:10000, img:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&q=60'},
             {title:'Création de site web (PDF)', desc:'Guide pas à pas, sans coder.', price:1000, img:'https://images.unsplash.com/photo-1547658719-da2b51169166?w=400&q=60'}
         ];
@@ -577,7 +577,7 @@
             closeModal('usersModal');
             let chat = chats.find(c => c.type === 'direct' && c.userEmail === email);
             if (!chat) {
-                chat = { id: 'u_' + email, name: name, avatar: '👤', type: 'direct', userEmail: email, isAdmin: true, messages: [{ type: 'system', text: 'Message direct de l\\'administration', time: '' }], lastMessage: 'Nouvelle conversation' };
+                chat = { id: 'u_' + email, name: name, avatar: '👤', type: 'direct', userEmail: email, isAdmin: true, messages: [{ type: 'system', text: 'Message direct de l\'administration', time: '' }], lastMessage: 'Nouvelle conversation' };
                 chats.push(chat);
                 saveChats();
             }
@@ -614,9 +614,9 @@
         function initApp() {
             chats = [{
                 id: 1, name: SITE_NAME + ' Support', avatar: 'https://files.catbox.moe/zkdsun.png',
-                lastMessage: 'Bonjour 👋, merci d\\'avoir contacté l\\'assistance xmen comment pouvions nous vous aider ?', isAdmin: true, isSupport: true, type: 'chat',
+                lastMessage: 'Bonjour 👋, merci d\'avoir contacté l\'assistance', isAdmin: true, isSupport: true, type: 'chat',
                 messages: [
-                    { type: 'system', text: 'Cette discussion est entre vous et le compte officiel de l\\'assistance ' + SITE_NAME, time: '' },
+                    { type: 'system', text: 'Cette discussion est entre vous et le compte officiel de l\'assistance ' + SITE_NAME, time: '' },
                     { type: 'received', text: 'Bonjour 👋, comment pouvons-nous vous aider ?', time: new Date().toLocaleTimeString() }
                 ]
             }];
@@ -862,7 +862,7 @@
                 </label>
             `).join('');
 
-            document.getElementById('memberList').innerHTML = memberListHTML || '<p style="color:var(--text-secondary);text-align:center;">Aucun contact disponible pour l\\'instant — tu pourras inviter par lien après la création.</p>';
+            document.getElementById('memberList').innerHTML = memberListHTML || '<p style="color:var(--text-secondary);text-align:center;">Aucun contact disponible pour l\'instant — tu pourras inviter par lien après la création.</p>';
             document.getElementById('createGroupModal').classList.add('show');
         }
         function toggleMember(id, checked) {
@@ -893,7 +893,7 @@
         }
         function copyGroupLink(link) {
             navigator.clipboard.writeText(link).then(() => {
-                alert('Lien copié ! Toute personne qui l\\'ouvre depuis cet appareil/navigateur rejoindra le groupe.');
+                alert('Lien copié ! Toute personne qui l\'ouvre depuis cet appareil/navigateur rejoindra le groupe.');
             }).catch(() => {
                 const textArea = document.createElement('textarea');
                 textArea.value = link;
@@ -928,7 +928,7 @@
                         <h4>${e.title}</h4>
                         <p>${e.desc}</p>
                         <div class="ebook-price">${e.price.toLocaleString()} FCFA</div>
-                        <button class="pay-btn" onclick="payWithWave(${e.price}, '${e.title.replace(/'/g, "\\\\'")}')"><i class="fas fa-credit-card"></i> Acheter</button>
+                        <button class="pay-btn" onclick="payWithWave(${e.price}, '${e.title.replace(/'/g, "\\\'")}')"><i class="fas fa-credit-card"></i> Acheter</button>
                     </div>
                 </div>
             `).join('');
